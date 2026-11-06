@@ -2028,7 +2028,7 @@ function applyView(v){fresh=!!v.fresh;A.forEach(a=>{const s=v.sel==='*'?'*':v.se
 function drawViews(){const el=$('views');el.innerHTML='';if(!views.length){el.innerHTML='<span class="msg">Nenhuma vista salva.</span>';return}
   [...views].filter(v=>!v.qr).sort((u,v)=>u.nome.localeCompare(v.nome)).forEach(v=>{const w=document.createElement('span');w.className='vw';const b=document.createElement('button');b.type='button';b.textContent=v.nome;b.title='Aplicar esta vista';b.onclick=()=>applyView(v);w.appendChild(b);
     if(writable){const x=document.createElement('button');x.type='button';x.textContent='×';x.title='Excluir vista';x.onclick=async()=>{views=views.filter(z=>z!==v);drawViews();if(vcoll)try{await vcoll.doc(v.id).delete()}catch(e){}};w.appendChild(x)}el.appendChild(w)})}
-var QRBASE='';try{QRBASE=localStorage.getItem('qrbase')||''}catch(e){};if(!QRBASE)QRBASE='https://red-dust-4d84.arquimedesdecarvalho.workers.dev'
+var QRBASE='';try{QRBASE=localStorage.getItem('qrbase')||''}catch(e){};if(!QRBASE||/workers\.dev|netlify\.app/.test(QRBASE))QRBASE='https://controle-tubulacao.github.io'
 function qrView(){// só o necessário para o celular: áreas/grupos selecionados + linhas filtradas + câmera
   const sel={};let all=true;A.forEach(a=>{const g=a.g.filter((x,k)=>a.sel[k]);if(g.length===a.g.length)sel[a.c]='*';else{all=false;if(g.length)sel[a.c]=g}});
   const v={s:all?'*':sel};const ln=[...lineSet].map(k=>LN[k]);if(ln.length)v.l=ln;
