@@ -1933,7 +1933,7 @@ function applyCtl(c){CTL=c;window.__lastCtl=c;window.__A=A;window.__LN=LN;window
   if(c){if(!RFOOT)buildFoot();const byL=new Map();
     c.rows.forEach(r=>{const w=r[5]||0,[f,l,s]=[r[6],r[7],r[8]];const pz=f!=null||l!=null||s!=null;kg[lineState(pz&&f==null?0:f,pz?(l!=null?l:0):l,pz?(s!=null?s:0):s)-1]+=w;
       const tk=r[0]+(kindOf(r[0])!=='R'&&r[9]?' · '+r[9]:'');const T=tab.get(tk)||tab.set(tk,[0,0,0,0,0]).get(tk);T[0]+=w;T[1]+=w*(f||0);T[2]+=w*(l||0);T[3]+=w*(s||0);T[4]+=(r[11]!=null?r[11]:w*(.3*(f||0)+.3*(l||0)+.4*(s||0)));
-      const k=resolveTag(r[1]);if(k<0){semLinha.add(r[1].replace(/^\?/,''));return}if(!byL.has(k))byL.set(k,[]);byL.get(k).push(r);if(r[8]!=null){const la=LNA.get(k)||LNA.set(k,[0,0]).get(k);const wla=r[5]||1;la[0]+=wla;la[1]+=wla*r[8]}});
+      const k=resolveTag(r[1]);if(k<0){semLinha.add(r[1].replace(/^\?/,''));return}if(!byL.has(k))byL.set(k,[]);byL.get(k).push(r);if(r[5]){const la=LNA.get(k)||LNA.set(k,[0,0]).get(k);la[0]+=r[5];la[1]+=(r[11]!=null?r[11]:r[5]*(.3*(f||0)+.3*(l||0)+.4*(s||0)))}});
     // drenos/purgas sem medição herdam a linha-mãe (DRENO1-00015 -> MPS00015)
     const LNC=new Map();A.forEach(a2=>{if(!a2.loaded)return;for(let i=0;i<a2.n;i++){const q=a2.ln[i];if(!q)continue;let c0=LNC.get(q);if(!c0)LNC.set(q,c0=[0,0,0]);c0[0]+=a2.cx[i];c0[1]+=a2.cy[i];c0[2]++}});
     const ctr=q=>{const c0=LNC.get(q);return c0?[c0[0]/c0[2],c0[1]/c0[2]]:null};
