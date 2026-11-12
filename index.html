@@ -1677,7 +1677,7 @@ function goHome(){OC.target.copy(HOME_T);CAM.position.copy(HOME_P);nearFit();OC.
 OC.addEventListener('change',()=>{clampView();nearFit()});window.__CAM=CAM;window.__OC=OC;
 function showPick(a,i){const p=$('pick');const re=a.real[i]<1e5?fmt(a.real[i]):'não lançado';const st=a.real[i]<=day?'montado':a.plan[i]<=day?'previsto, não montado':'futuro';
   const pe=$('pickE');p.hidden=true;
-  pe.innerHTML=`<div class="pkh"><b>Peça selecionada</b><button type="button" class="ghost" onclick="this.parentNode.parentNode.hidden=true" title="Fechar">×</button></div><div><b>${a.c}</b> · ${a.name.replace(/\.nwd$/i,'')}</div><div><span class="k">Sistema:</span> ${a.g[a.grp[i]]}</div>${a.ln[i]?`<div><span class="k">Linha:</span> ${LN[a.ln[i]]}</div><div><span class="k">Passa por:</span> ${whereTxt(a.ln[i])}</div>`:''}<div><span class="k">Disciplina:</span> ${CN[CATS[a.cat[i]]]}</div><div><span class="k">Planejado:</span> ${fmt(a.plan[i])}</div><div><span class="k">Real:</span> ${re} · ${st}</div>${a.ctl&&a.ctl[i]?`<div><span class="k">Controle (planilha):</span> <span class="sw" style="background:${STC[a.ctl[i]-1]}"></span> ${STN[a.ctl[i]-1]}${LNAGG&&a.ln[i]&&LNAGG.has(a.ln[i])?` · linha ${Math.round(100*LNAGG.get(a.ln[i])[1]/Math.max(1e-9,LNAGG.get(a.ln[i])[0]))}% montada`:``}</div>`:''}${a.act[i]>=0?actTxt(ACT[a.act[i]]):''}`;pe.hidden=false;openTab('E')}
+  pe.innerHTML=`<div class="pkh"><b>Peça selecionada</b><button type="button" class="ghost" onclick="this.parentNode.parentNode.hidden=true" title="Fechar">×</button></div><div><b>${a.c}</b> · ${a.name.replace(/\.nwd$/i,'')}</div><div><span class="k">Sistema:</span> ${a.g[a.grp[i]]}</div>${a.ln[i]?`<div><span class="k">Linha:</span> ${LN[a.ln[i]]}</div><div><span class="k">Passa por:</span> ${whereTxt(a.ln[i])}</div>`:''}<div><span class="k">Disciplina:</span> ${CN[CATS[a.cat[i]]]}</div><div><span class="k">Planejado:</span> ${fmt(a.plan[i])}</div><div><span class="k">Real:</span> ${re} · ${st}</div>${a.ctl&&a.ctl[i]?`<div><span class="k">Controle (planilha):</span> <span class="sw" style="background:${STC[a.ctl[i]-1]}"></span> ${STN[a.ctl[i]-1]}${OVRLN.has(a.ln[i]+'|'+a.c)?' · <b>ajuste manual</b> (campo informou inicio; planilha ainda nao atualizada)':''}${LNAGG&&a.ln[i]&&LNAGG.has(a.ln[i])?` · linha ${Math.round(100*LNAGG.get(a.ln[i])[1]/Math.max(1e-9,LNAGG.get(a.ln[i])[0]))}% montada`:``}</div>`:''}${a.act[i]>=0?actTxt(ACT[a.act[i]]):''}`;pe.hidden=false;openTab('E')}
 function actTxt(x){return `<div style="margin-top:4px;border-top:1px solid var(--line);padding-top:4px"><span class="k">Atividade (cronograma):</span> ${x.id}</div><div>${x.nome}</div><div><span class="k">Avanço da atividade:</span> ${x.pct}% · ${fmtI(x.ini)}${x.fl&1?' A':''} → ${fmtI(x.fim)}${x.fl&2?' A':''}</div>`}
 const fmtI=s=>s?new Date(s+'T12:00:00').toLocaleDateString('pt-BR'):'–';
 // ---------- programações (Cronograma Master do Primavera) ----------
@@ -1934,6 +1934,10 @@ const fonteOf=c=>c.fonte||'OSBL · Pipe racks e utilidades';
 const inUse=c=>CSEL[fonteOf(c)]===c.id;
 function applySel(){const docs=Object.values(CSEL).map(id=>CTLS.find(z=>z.id===id)).filter(Boolean);
   if(!docs.length){applyCtl(null);return}applyCtl({id:'combo',nome:docs.map(d=>d.nome).join(' + '),rows:docs.flatMap(d=>d.rows)})}
+// ajustes manuais informados pelo campo: a planilha ainda nao reflete a situacao real.
+// st: 1=nao iniciada, 2=em andamento, 3=concluida. a=codigo da area (vazio = todas)
+const CTLOVR=[{ln:"DOL42010",a:"40",st:2}];
+let OVRLN=new Set();
 function applyCtl(c){CTL=c;window.__lastCtl=c;window.__A=A;window.__LN=LN;window.__PWC=()=>PWC;ctlId=c?c.id:null;CTLLINES=new Set();A.forEach(a=>{if(a.loaded)a.ctl.fill(0)});const semLinha=new Set(),sem3d=new Set();
   const kg=[0,0,0,0],tab=new Map(),LNA=new Map();LNAGG=LNA;
   if(c){if(!RFOOT)buildFoot();const byL=new Map();
@@ -1976,6 +1980,9 @@ function applyCtl(c){CTL=c;window.__lastCtl=c;window.__A=A;window.__LN=LN;window
       const un=els.filter(([a,i])=>!a.ctl[i]),pt=els.filter(([a,i])=>a.ctl[i]);
       if(un.length&&pt.length&&un.length*pt.length<6e6)un.forEach(([a,i])=>{let bd=1e18,bs=0;pt.forEach(([b,j])=>{const dx=b.cx[j]-a.cx[i],dy=b.cy[j]-a.cy[i],dz=b.cz[j]-a.cz[i],d=dx*dx+dy*dy+dz*dz;if(d<bd){bd=d;bs=b.ctl[j]}});a.ctl[i]=bs})})}
   if(c){const ti=CATS.indexOf('TUB');A.forEach(a=>{if(!a.loaded)return;for(let i=0;i<a.n;i++){if(a.cat[i]!==ti)continue;const g=a.g[a.grp[i]];if(g==='PR02')a.ctl[i]=3;else if(g==='PR08')a.ctl[i]=3}})}
+  OVRLN=new Set();if(c&&CTLOVR.length){const to=CATS.indexOf('TUB');CTLOVR.forEach(o=>{const k=LN.indexOf(o.ln);if(k<1)return;
+    A.forEach(a=>{if(!a.loaded||(o.a&&a.c!==o.a))return;let n=0;for(let i=0;i<a.n;i++)if(a.ln[i]===k&&a.cat[i]===to){a.ctl[i]=o.st;n++}
+      if(n)OVRLN.add(k+'|'+a.c)})})}
   U.uHL.value=(CTL&&U.uCtl.value)?0:6;A.forEach(writeState);drawCtl(kg,tab,semLinha,sem3d);legend();kpiCtl();if(!$('tabE').hidden)drawRun()}
 function drawCtl(kg,tab,semLinha,sem3d){kg=kg.slice(0,3);const box=$('cleg');if(!CTL){box.innerHTML='<div class="msg">Nenhum controle em uso.</div>';$('ctab').innerHTML='';$('cmsg2').textContent='';drawCtlList();return}
   const T=kg.reduce((x,y)=>x+y,0)||1;const pct=v=>(100*v/T).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
