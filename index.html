@@ -1396,6 +1396,11 @@ const cv=$('c');const R=new THREE.WebGLRenderer({canvas:cv,antialias:true});R.se
 const S=new THREE.Scene();S.background=new THREE.Color(window.__M?0x14201c:0x07463c);if(window.__M)window.__MBG=1;
 const CAM=new THREE.PerspectiveCamera(40,1,1,20000);CAM.up.set(0,0,1);CAM.position.set(-140,-578,401);
 const OC=new THREE.OrbitControls(CAM,cv);OC.target.set(-140,55,12);OC.enableDamping=true;OC.dampingFactor=.12;OC.screenSpacePanning=true;
+// botao do meio arrasta a cena (igual ao Navisworks); direito continua arrastando tambem
+try{OC.mouseButtons={LEFT:THREE.MOUSE.ROTATE,MIDDLE:THREE.MOUSE.PAN,RIGHT:THREE.MOUSE.PAN}}catch(e){}
+cv.addEventListener('mousedown',e=>{if(e.button===1)e.preventDefault()});
+cv.addEventListener('auxclick',e=>{if(e.button===1)e.preventDefault()});
+
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(6000,6000),new THREE.MeshBasicMaterial({color:0x0eb194}));ground.position.z=11.4;S.add(ground);
 
 const catCols=CATS.map(k=>new THREE.Color(css(CV[k])));
