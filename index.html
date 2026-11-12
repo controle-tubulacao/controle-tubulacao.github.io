@@ -1936,7 +1936,8 @@ function applySel(){const docs=Object.values(CSEL).map(id=>CTLS.find(z=>z.id===i
   if(!docs.length){applyCtl(null);return}applyCtl({id:'combo',nome:docs.map(d=>d.nome).join(' + '),rows:docs.flatMap(d=>d.rows)})}
 // ajustes manuais informados pelo campo: a planilha ainda nao reflete a situacao real.
 // st: 1=nao iniciada, 2=em andamento, 3=concluida. a=codigo da area (vazio = todas)
-const CTLOVR=[{ln:"DOL42010",a:"40",st:2}];
+const CTLOVR=[{ln:"DOL42010",a:"40",st:2},
+               {g:"PR05",de:1,st:2}];   // pipe rack 5: o que esta amarelo na planilha ja comecou
 let OVRLN=new Set();
 function applyCtl(c){CTL=c;window.__lastCtl=c;window.__A=A;window.__LN=LN;window.__PWC=()=>PWC;ctlId=c?c.id:null;CTLLINES=new Set();A.forEach(a=>{if(a.loaded)a.ctl.fill(0)});const semLinha=new Set(),sem3d=new Set();
   const kg=[0,0,0,0],tab=new Map(),LNA=new Map();LNAGG=LNA;
@@ -1980,9 +1981,14 @@ function applyCtl(c){CTL=c;window.__lastCtl=c;window.__A=A;window.__LN=LN;window
       const un=els.filter(([a,i])=>!a.ctl[i]),pt=els.filter(([a,i])=>a.ctl[i]);
       if(un.length&&pt.length&&un.length*pt.length<6e6)un.forEach(([a,i])=>{let bd=1e18,bs=0;pt.forEach(([b,j])=>{const dx=b.cx[j]-a.cx[i],dy=b.cy[j]-a.cy[i],dz=b.cz[j]-a.cz[i],d=dx*dx+dy*dy+dz*dz;if(d<bd){bd=d;bs=b.ctl[j]}});a.ctl[i]=bs})})}
   if(c){const ti=CATS.indexOf('TUB');A.forEach(a=>{if(!a.loaded)return;for(let i=0;i<a.n;i++){if(a.cat[i]!==ti)continue;const g=a.g[a.grp[i]];if(g==='PR02')a.ctl[i]=3;else if(g==='PR08')a.ctl[i]=3}})}
-  OVRLN=new Set();if(c&&CTLOVR.length){const to=CATS.indexOf('TUB');CTLOVR.forEach(o=>{const k=LN.indexOf(o.ln);if(k<1)return;
-    A.forEach(a=>{if(!a.loaded||(o.a&&a.c!==o.a))return;let n=0;for(let i=0;i<a.n;i++)if(a.ln[i]===k&&a.cat[i]===to){a.ctl[i]=o.st;n++}
-      if(n)OVRLN.add(k+'|'+a.c)})})}
+  OVRLN=new Set();if(c&&CTLOVR.length){const to=CATS.indexOf('TUB');CTLOVR.forEach(o=>{
+    const k=o.ln?LN.indexOf(o.ln):-1;if(o.ln&&k<1)return;
+    A.forEach(a=>{if(!a.loaded||(o.a&&a.c!==o.a))return;
+      for(let i=0;i<a.n;i++){if(a.cat[i]!==to)continue;
+        if(k>0&&a.ln[i]!==k)continue;
+        if(o.g&&a.g[a.grp[i]]!==o.g)continue;
+        if(o.de!=null&&a.ctl[i]!==o.de)continue;
+        a.ctl[i]=o.st;if(a.ln[i])OVRLN.add(a.ln[i]+'|'+a.c)}})})}
   U.uHL.value=(CTL&&U.uCtl.value)?0:6;A.forEach(writeState);drawCtl(kg,tab,semLinha,sem3d);legend();kpiCtl();if(!$('tabE').hidden)drawRun()}
 function drawCtl(kg,tab,semLinha,sem3d){kg=kg.slice(0,3);const box=$('cleg');if(!CTL){box.innerHTML='<div class="msg">Nenhum controle em uso.</div>';$('ctab').innerHTML='';$('cmsg2').textContent='';drawCtlList();return}
   const T=kg.reduce((x,y)=>x+y,0)||1;const pct=v=>(100*v/T).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
