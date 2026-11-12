@@ -1954,7 +1954,7 @@ function applyCtl(c){CTL=c;window.__lastCtl=c;window.__A=A;window.__LN=LN;window
     const LNC=new Map();A.forEach(a2=>{if(!a2.loaded)return;for(let i=0;i<a2.n;i++){const q=a2.ln[i];if(!q)continue;let c0=LNC.get(q);if(!c0)LNC.set(q,c0=[0,0,0]);c0[0]+=a2.cx[i];c0[1]+=a2.cy[i];c0[2]++}});
     const ctr=q=>{const c0=LNC.get(q);return c0?[c0[0]/c0[2],c0[1]/c0[2]]:null};
     for(let k=1;k<LN.length;k++){const nm=LN[k]||'';const m=nm.match(/^(?:DRENO|PURGA)\d*-(.+)$/i);if(!m)continue;
-      const rs0=byL.get(k);const vazio=!rs0||rs0.every(r=>r[6]==null&&r[7]==null&&r[8]==null);if(!vazio)continue;
+      const rs0=byL.get(k);const vazio=!rs0||rs0.every(r=>r[6]==null&&r[7]==null&&r[8]==null&&r[11]==null);if(!vazio)continue;
       let pk=resolveTag(m[1]);
       if(!(pk>0&&byL.has(pk))){const suf=m[1].toUpperCase();const cand=[];
         for(let q=1;q<LN.length;q++){const x=(LN[q]||'').toUpperCase();if(q!==k&&byL.has(q)&&x.endsWith(suf)&&!/^(?:DRENO|PURGA)/.test(x))cand.push(q)}
