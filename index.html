@@ -1249,6 +1249,55 @@ body.mob .time .modes{grid-column:1/-1}body.mob .date{font-size:16px;min-width:7
 body.mob #seq,body.mob #pipeOnly,body.mob #cm,body.mob #spd{display:none}body.mob .legend3d{font-size:10px}
 canvas#c{touch-action:none}
 .hqs{position:absolute;left:12px;top:52px;background:rgba(14,19,18,.85);border:1px solid var(--line);border-radius:6px;padding:4px 9px;font-size:12px;z-index:3}
+
+.sch{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:5px;margin:2px 0 7px}
+.sch>div{background:var(--panel2);border-radius:5px;padding:6px 7px;min-width:0}
+.sch .v{font-family:var(--display);font-size:clamp(14px,1.3vw,21px);font-weight:600;line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums}
+.sch .l{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute)}
+.sch .s{font-size:10px;color:var(--mute);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.atr{color:var(--late)}.adi{color:var(--ahead)}.okc{color:var(--ok)}
+.schf{display:flex;gap:4px;margin:0 0 5px;flex-wrap:wrap}
+.schf button{font-size:10px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--mute);cursor:pointer;font-family:inherit}
+.schf button.on{background:var(--accent);color:#04231c;border-color:var(--accent);font-weight:700}
+.actt{width:100%;border-collapse:collapse;font-size:11px}
+.actt th{text-align:left;font-weight:600;color:var(--mute);padding:2px 4px;font-size:10px;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--line)}
+.actt td{padding:4px;border-top:1px solid var(--line);vertical-align:top}
+.actt td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.actt tr.r{cursor:pointer}
+.actt tr.r:hover td{background:rgba(255,255,255,.045)}
+.actt tr.on td{background:rgba(16,185,138,.14)}
+.b3{display:block;height:3px;border-radius:2px;background:var(--line);margin:2px 0 0;overflow:hidden}
+.b3 i{display:block;height:100%}
+.sl{font-size:10px;color:var(--mute)}
+.schw{max-height:46vh;overflow:auto}
+
+.rsb{margin-top:6px;width:100%;background:var(--late);border:none;color:#fff;font-weight:700;font-family:inherit;font-size:12px;padding:7px 10px;border-radius:6px;cursor:pointer}
+.rsb.sec2{background:transparent;border:1px solid var(--line);color:var(--fg);font-weight:600}
+#rsOv{position:fixed;inset:0;background:rgba(6,10,9,.72);z-index:40;display:flex;align-items:center;justify-content:center;padding:14px}
+#rsOv .cd{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;width:min(420px,96vw);max-height:92vh;overflow:auto}
+#rsOv h3{font-family:var(--display);font-size:20px;margin:0 0 2px}
+#rsOv label{display:block;font-size:11px;color:var(--mute);margin:8px 0 2px;text-transform:uppercase;letter-spacing:.04em}
+#rsOv input,#rsOv select,#rsOv textarea{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--fg);border-radius:6px;padding:7px 8px;font:inherit;font-size:13px}
+#rsOv textarea{min-height:64px;resize:vertical}
+#rsOv .ctx{font-size:11px;color:var(--mute);background:var(--panel2);border-radius:6px;padding:7px 8px;margin-top:4px;line-height:1.5}
+#rsOv .rw{display:flex;gap:8px}#rsOv .rw>*{flex:1;min-width:0}
+#rsOv .ac{display:flex;gap:8px;margin-top:12px}
+#rsOv .ac button{flex:1;padding:9px;border-radius:6px;border:none;font:inherit;font-weight:700;font-size:13px;cursor:pointer}
+#rsOv .ok{background:var(--accent);color:#04231c}#rsOv .cc{background:transparent;border:1px solid var(--line);color:var(--fg)}
+.ri{border-top:1px solid var(--line);padding:7px 4px;cursor:pointer}
+.ri:first-child{border-top:none}
+.ri:hover{background:rgba(255,255,255,.045)}
+.ri.on{background:rgba(229,83,61,.14)}
+.ri .t{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ri .id{font-family:var(--mono);font-size:10px;color:var(--mute)}
+.ri .nm{font-weight:600;font-size:12px;flex:1;min-width:0}
+.ri .mt{font-size:10px;color:var(--mute);margin-top:2px;line-height:1.45}
+.pz{font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px;white-space:nowrap}
+.pz.ab{background:rgba(229,83,61,.18);color:var(--late)}
+.pz.at{background:var(--late);color:#fff}
+.pz.rs{background:rgba(87,192,138,.18);color:var(--ok)}
+.rsy{font-size:10px;color:var(--mute);margin-bottom:5px}
+.rsy b{color:var(--fg)}
 </style>
 
 <div class="app">
@@ -1300,6 +1349,16 @@ canvas#c{touch-action:none}
         <button type="button" onclick="document.getElementById('qrOv').hidden=true" style="margin-top:12px;background:#10b98a;border:none;color:#04231c;font-weight:700;padding:8px 16px;border-radius:6px">Fechar</button>
       </div>
     </div><div class="wx" id="wx" hidden></div>
+    <div id="rsOv" hidden><div class="cd">
+      <h3 id="rsTit">Nova restrição</h3>
+      <div class="ctx" id="rsCtx"></div>
+      <label for="rsNm">O que está impedindo</label>
+      <input id="rsNm" maxlength="120" placeholder="Ex.: interferência na montagem da viga V-101">
+      <div class="rw"><div><label for="rsRe">Responsável</label><select id="rsRe"><option>Engenharia</option><option>Suprimentos</option><option>Montagem</option><option>Civil</option><option>Elétrica</option><option>Caldeiraria</option><option>Cliente</option><option>Outro</option></select></div><div><label for="rsPz">Prazo</label><input type="date" id="rsPz"></div></div>
+      <label for="rsDs">Detalhe (opcional)</label>
+      <textarea id="rsDs" maxlength="600" placeholder="O que precisa acontecer para liberar"></textarea>
+      <div class="ac"><button type="button" class="cc" id="rsCan">Cancelar</button><button type="button" class="ok" id="rsSav">Registrar</button></div>
+    </div></div>
     
     <div class="legend3d" id="leg"></div>
     <button type="button" class="ptg" id="tgL" title="Ocultar/mostrar o painel de filtros">◀</button>
@@ -1314,10 +1373,23 @@ canvas#c{touch-action:none}
         <div title="Peso de tubulação montado"><div class="v" id="kRe">–</div><div class="l">Montado (t)</div></div>
         <div title="Peso que falta montar"><div class="v" id="kDv">–</div><div class="l" id="kDvL">Saldo</div></div>
       </div>
-      <div class="tabs" role="tablist"><button type="button" class="on" data-t="G" role="tab">Avanço</button><button type="button" data-t="E" role="tab">Em execução</button><button type="button" data-t="C" role="tab">Chuva</button></div>
+      <div class="tabs" role="tablist"><button type="button" class="on" data-t="G" role="tab">Avanço</button><button type="button" data-t="E" role="tab">Em execução</button><button type="button" data-t="C" role="tab">Chuva</button><button type="button" data-t="P" role="tab">Cronograma</button><button type="button" data-t="R" role="tab">Restrições<span id="rsBadge"></span></button></div>
       <div class="tabp" id="tabG"><canvas id="curve" width="560" height="300" aria-label="Curva S planejado e real"></canvas><div class="msg" id="selinfo"></div></div>
       <div class="tabp" id="tabE" hidden><div id="pickE" class="pickE" hidden></div><div id="areaSum"></div><div id="runT"></div><div id="runL"></div></div>
       <div class="tabp" id="tabC" hidden><div class="msg" id="rainT"></div><canvas id="rainc" width="560" height="240" aria-label="Chuva diária"></canvas><div class="rk" id="rainK"></div><div class="msg" id="rainS" style="margin-top:6px"></div></div>
+      <div class="tabp" id="tabP" hidden>
+        <div class="sch" id="schK"></div>
+        <div class="schf" id="schF"><button type="button" data-f="all" class="on">Todas</button><button type="button" data-f="run">Em execução</button><button type="button" data-f="late">Atrasadas</button><button type="button" data-f="done">Concluídas</button></div>
+        <div class="msg" id="schT"></div>
+        <div class="schw"><table class="actt" id="schTb"></table></div>
+      </div>
+      <div class="tabp" id="tabR" hidden>
+        <div class="rsy" id="rsSync">—</div>
+        <div class="schf" id="rsF"><button type="button" data-f="open" class="on">Abertas</button><button type="button" data-f="late">Vencidas</button><button type="button" data-f="done">Resolvidas</button><button type="button" data-f="all">Todas</button></div>
+        <div class="msg" id="rsT"></div>
+        <div class="schw" id="rsL"></div>
+        <button type="button" class="rsb sec2" id="rsCfg" style="margin-top:8px">Configurar servidor e quem registra…</button>
+      </div>
     </div>
     <div class="sec">
       <h2>Programações · Cronograma Master</h2>
@@ -1377,6 +1449,7 @@ const DD=(window.__M||(MOB&&!window.__OFF))?'dm':'d';
 
 if(window.__M){
   try{const r0=await fetch('controles.json',{cache:'no-store'});if(r0.ok){const j0=await r0.json();if(j0&&Array.isArray(j0.ctls))window.__CTL0=j0.ctls.filter(c=>Array.isArray(c.rows))}}catch(e){}
+  try{const r1=await fetch('programacoes.json',{cache:'no-store'});if(r1.ok){const j1=await r1.json();if(j1&&Array.isArray(j1.progs))window.__PROG0=j1.progs.filter(z=>Array.isArray(z.rows))}}catch(e){}
   try{const hs=(location.hash||'').replace(/^#/,'')+'&'+location.search.replace(/^\?/,'');const mm=/(?:^|&)s=([^&]+)/.exec(hs);
     if(mm){const q=JSON.parse(decodeURIComponent(escape(atob(mm[1].replace(/-/g,'+').replace(/_/g,'/')))));window.__QV0=q.s!==undefined?{sel:q.s,linhas:q.l||[],cam:q.cam,tgt:q.tgt,cd:q.cd}:q}}catch(e){}
 }
@@ -1515,10 +1588,11 @@ function lineChip(k){const b=document.createElement('button');b.type='button';co
 // trechos do controle de tubulação aparecem coloridos mesmo sem atividade do cronograma ligada
 function selCtl(a,i){if(!catOn.has(CATS[a.cat[i]]))return false;if(lineSet.size&&a.cat[i]===TUBI)return lineSet.has(a.ln[i]);return a.sel[a.grp[i]]===1}
 function selFlag(a,i){if(!a.mapped[i])return false;if(!catOn.has(CATS[a.cat[i]]))return false;if(lineSet.size&&a.cat[i]===TUBI)return lineSet.has(a.ln[i]);return a.sel[a.grp[i]]===1}
-function writeState(a){if(!a.loaded)return;const s=a.st;for(let i=0;i<a.n;i++){s[i*4]=a.plan[i];s[i*4+1]=selFlag(a,i)||(CTL&&a.ctl&&a.ctl[i]&&selCtl(a,i))?1:.5;s[i*4+2]=a.real[i];s[i*4+3]=a.ctl?a.ctl[i]:0}a.stT.needsUpdate=true}
+let ACTHL=null;/* atividade destacada a partir da tabela do cronograma */
+function writeState(a){if(!a.loaded)return;const s=a.st;for(let i=0;i<a.n;i++){s[i*4]=a.plan[i];s[i*4+1]=(RSHL?(RSHL[0]===a.c&&RSHL[1]===i):(ACTHL?(a.act[i]>=0&&ACTHL.has(a.act[i])):(selFlag(a,i)||(CTL&&a.ctl&&a.ctl[i]&&selCtl(a,i)))))?1:.5;s[i*4+2]=a.real[i];s[i*4+3]=a.ctl?a.ctl[i]:0}a.stT.needsUpdate=true}
 let fresh=true;/* "planta toda": a primeira escolha começa do zero */
 function startPick(){if(fresh){A.forEach(a=>a.sel.fill(0));fresh=false}}
-function refreshSel(){A.forEach(writeState);stats();drawTree(false);drawRacks();drawLines();drawSum();drawActs()}
+function refreshSel(){A.forEach(writeState);stats();drawTree(false);drawRacks();drawLines();drawSum();drawActs();try{drawSched()}catch(e){}}
 function drawLines(){const el=$('lines');const q=$('lq').value.trim().toUpperCase();let ids;
   if(q){ids=[];for(let k=1;k<LN.length;k++)if(LCOUNT[k]&&LN[k].toUpperCase().includes(q))ids.push(k)}
   else{const st=new Set();if(!fresh)A.forEach(a=>{if(!a.loaded)return;a.g.forEach((g,k)=>{if(a.sel[k])a.glines[k].forEach(x=>st.add(x))})});ids=[...st]}
@@ -1682,7 +1756,7 @@ function goHome(){OC.target.copy(HOME_T);CAM.position.copy(HOME_P);nearFit();OC.
 OC.addEventListener('change',()=>{clampView();nearFit()});window.__CAM=CAM;window.__OC=OC;
 function showPick(a,i){const p=$('pick');const re=a.real[i]<1e5?fmt(a.real[i]):'não lançado';const st=a.real[i]<=day?'montado':a.plan[i]<=day?'previsto, não montado':'futuro';
   const pe=$('pickE');p.hidden=true;
-  pe.innerHTML=`<div class="pkh"><b>Peça selecionada</b><button type="button" class="ghost" onclick="this.parentNode.parentNode.hidden=true" title="Fechar">×</button></div><div><b>${a.c}</b> · ${a.name.replace(/\.nwd$/i,'')}</div><div><span class="k">Sistema:</span> ${a.g[a.grp[i]]}</div>${a.ln[i]?`<div><span class="k">Linha:</span> ${LN[a.ln[i]]}</div><div><span class="k">Passa por:</span> ${whereTxt(a.ln[i])}</div>`:''}<div><span class="k">Disciplina:</span> ${CN[CATS[a.cat[i]]]}</div><div><span class="k">Planejado:</span> ${fmt(a.plan[i])}</div><div><span class="k">Real:</span> ${re} · ${st}</div>${a.ctl&&a.ctl[i]?`<div><span class="k">Controle (planilha):</span> <span class="sw" style="background:${STC[a.ctl[i]-1]}"></span> ${STN[a.ctl[i]-1]}${OVRLN.has(a.ln[i]+'|'+a.c)?' · <b>ajuste manual</b> (campo informou inicio; planilha ainda nao atualizada)':''}${LNAGG&&a.ln[i]&&LNAGG.has(a.ln[i])?` · linha ${Math.round(100*LNAGG.get(a.ln[i])[1]/Math.max(1e-9,LNAGG.get(a.ln[i])[0]))}% montada`:``}</div>`:''}${a.act[i]>=0?actTxt(ACT[a.act[i]]):''}`;pe.hidden=false;openTab('E')}
+  pe.innerHTML=`<div class="pkh"><b>Peça selecionada</b><button type="button" class="ghost" onclick="this.parentNode.parentNode.hidden=true" title="Fechar">×</button></div><div><b>${a.c}</b> · ${a.name.replace(/\.nwd$/i,'')}</div><div><span class="k">Sistema:</span> ${a.g[a.grp[i]]}</div>${a.ln[i]?`<div><span class="k">Linha:</span> ${LN[a.ln[i]]}</div><div><span class="k">Passa por:</span> ${whereTxt(a.ln[i])}</div>`:''}<div><span class="k">Disciplina:</span> ${CN[CATS[a.cat[i]]]}</div><div><span class="k">Planejado:</span> ${fmt(a.plan[i])}</div><div><span class="k">Real:</span> ${re} · ${st}</div>${a.ctl&&a.ctl[i]?`<div><span class="k">Controle (planilha):</span> <span class="sw" style="background:${STC[a.ctl[i]-1]}"></span> ${STN[a.ctl[i]-1]}${OVRLN.has(a.ln[i]+'|'+a.c)?' · <b>ajuste manual</b> (campo informou inicio; planilha ainda nao atualizada)':''}${LNAGG&&a.ln[i]&&LNAGG.has(a.ln[i])?` · linha ${Math.round(100*LNAGG.get(a.ln[i])[1]/Math.max(1e-9,LNAGG.get(a.ln[i])[0]))}% montada`:``}</div>`:''}${a.act[i]>=0?actTxt(ACT[a.act[i]]):''}${rsPieceTxt(a,i)}<button type="button" class="rsb" onclick="rsNew()">Registrar restrição nesta peça</button>`;PICK0=[a,i];pe.hidden=false;openTab('E')}
 function actTxt(x){return `<div style="margin-top:4px;border-top:1px solid var(--line);padding-top:4px"><span class="k">Atividade (cronograma):</span> ${x.id}</div><div>${x.nome}</div><div><span class="k">Avanço da atividade:</span> ${x.pct}% · ${fmtI(x.ini)}${x.fl&1?' A':''} → ${fmtI(x.fim)}${x.fl&2?' A':''}</div>`}
 const fmtI=s=>s?new Date(s+'T12:00:00').toLocaleDateString('pt-BR'):'–';
 // ---------- programações (Cronograma Master do Primavera) ----------
@@ -1760,7 +1834,7 @@ let asT=0;function drawRun(force){const d=Math.round(day);runDay=d;updRain(d);if
     G.get(k).sort((u,v)=>u.d0-v.d0).forEach(x=>{const rd=rainyIn(x);h+=`<div class="ra" title="${x.id} · ${fmtI(x.ini)} → ${fmtI(x.fim)}${rd?` · ${rd} dia(s) com chuva ≥ 10 mm no período`:''}"><span class="d">${x.cat||'—'}</span><span class="t">${x.nome}</span><span class="p">${rd?`<span class="w">☔${rd}</span>`:''}${Math.round(x.pct)}%</span></div>`})});
   L.innerHTML=h}
 function openTab(t){const b=document.querySelector('[data-t="'+t+'"]');if(b)b.onclick()}
-document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-t]').forEach(c=>c.classList.toggle('on',c===b));['G','E','C'].forEach(t=>$('tab'+t).hidden=t!==b.dataset.t);if(b.dataset.t==='C')drawRainTab(true);if(b.dataset.t==='E')drawRun()});
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-t]').forEach(c=>c.classList.toggle('on',c===b));['G','E','C','P','R'].forEach(t=>$('tab'+t).hidden=t!==b.dataset.t);if(b.dataset.t==='C')drawRainTab(true);if(b.dataset.t==='E')drawRun();if(b.dataset.t==='P')drawSched();if(b.dataset.t==='R')drawRestr()});
 // ---------- chuva (índice pluviométrico diário, Passo Fundo) ----------
 let RAIN=null,rainI=0,rainLast=-1e9;
 if(!window.__M)(async()=>{try{RAIN=(window.__OFF&&__OFF['chuva.json'])?JSON.parse(new TextDecoder().decode(b64d(__OFF['chuva.json']))):await (await fetch(DD+'/chuva.json')).json();RAIN.D=dayOfISO(RAIN.d0);ACT.forEach(x=>x.rd=null);updRain(Math.round(day))}catch(e){console.warn('chuva',e)}})();
@@ -1795,6 +1869,154 @@ function drawRainTab(force){if(!RAIN){$('rainT').textContent='Carregando dados d
   $('rainK').innerHTML=`<div><div class="v">${Math.round(tot)} mm</div><div class="l">Total em ${mes.split(' ')[0]}</div></div><div><div class="v">${n1}</div><div class="l">Dias ≥ 1 mm</div></div><div><div class="v">${n10}</div><div class="l">Dias ≥ 10 mm</div></div>`;
   const sel=PROG?ACT.filter(x=>x.d0!=null&&x.d0<=d&&d<=x.d1&&(!ACTSEL||ACTSEL.has(x.idx))):[];const afet=sel.filter(x=>rainyIn(x)>0).length;
   $('rainS').textContent=(obsD?'':'Mês sem dados observados. ')+`Fonte: ${RAIN.fonte}, ${RAIN.local}.`+(PROG?` Das ${sel.length} atividades em execução nesta data, ${afet} já tiveram ao menos um dia com chuva ≥ 10 mm (☔ na aba Em execução mostra quantos).`:'')}
+
+// ---------- cronograma: linha de base x real x avanço do modelo ----------
+// Linha de base = quanto a atividade deveria ter andado hoje pela data de início e término.
+// Real = Units % Complete da planilha do Primavera.
+// Modelo = peças da atividade que o controle de tubulação marca como concluídas.
+let schFil='all';
+function schMetrics(){const d=Math.round(day);const mod=new Map();
+  A.forEach(a=>{if(!a.loaded||!a.ctl)return;for(let i=0;i<a.n;i++){const k=a.act[i];if(k<0||!a.ctl[i])continue;
+    let m=mod.get(k);if(!m)mod.set(k,m=[0,0]);m[0]++;if(a.ctl[i]===3)m[1]++}});
+  const xs=ACT.filter(x=>x.d0!=null&&x.d1!=null&&(!ACTSEL||ACTSEL.has(x.idx))).map(x=>{
+    const dur=Math.max(1,x.d1-x.d0);
+    const lb=Math.max(0,Math.min(1,(d-x.d0)/dur))*100;
+    const re=Math.max(0,Math.min(100,x.pct));
+    const m=mod.get(x.idx);
+    const mo=m&&m[0]?100*m[1]/m[0]:null;
+    const dpp=re-lb, dd=Math.round(dpp/100*dur);
+    const st=re>=99.5?'done':(d>x.d1?'late':(d>=x.d0?'run':'fut'));
+    return {x,dur,lb,re,mo,dpp,dd,st,n:x.n||0};});
+  return xs}
+const pct1=v=>v==null?'–':(Math.round(v*10)/10).toLocaleString('pt-BR')+'%';
+function drawSched(){if($('tabP').hidden)return;
+  if(!PROG){$('schK').innerHTML='';$('schT').textContent='Importe e ative um Cronograma Master para comparar linha de base, real e avanço do modelo.';$('schTb').innerHTML='';return}
+  const xs=schMetrics();if(!xs.length){$('schK').innerHTML='';$('schT').textContent='Nenhuma atividade com datas na seleção.';$('schTb').innerHTML='';return}
+  let W=0,sLb=0,sRe=0,mT=0,mD=0;
+  xs.forEach(o=>{const w=o.n||1;W+=w;sLb+=w*o.lb;sRe+=w*o.re;if(o.mo!=null){mT+=o.n;mD+=o.mo/100*o.n}});
+  const LB=sLb/W,RE=sRe/W,MO=mT?100*mD/mT:null,DPP=RE-LB;
+  const late=xs.filter(o=>o.st==='late').length,run=xs.filter(o=>o.st==='run').length,done=xs.filter(o=>o.st==='done').length;
+  const cls=DPP<-1?'atr':(DPP>1?'adi':'okc');
+  $('schK').innerHTML=
+   `<div title="Quanto as atividades deveriam ter andado até ${fmt(Math.round(day))}, pelas datas de início e término da linha de base"><div class="v">${pct1(LB)}</div><div class="l">Previsto</div><div class="s">linha de base</div></div>`+
+   `<div title="Units % Complete informado no Cronograma Master"><div class="v">${pct1(RE)}</div><div class="l">Real</div><div class="s">${xs.length} atividade${xs.length===1?'':'s'}</div></div>`+
+   `<div title="Peças destas atividades que o controle de tubulação marca como concluídas"><div class="v">${pct1(MO)}</div><div class="l">Modelo</div><div class="s">${mT?mT.toLocaleString('pt-BR')+' peças':'sem controle'}</div></div>`+
+   `<div title="Real menos previsto, em pontos percentuais, e o equivalente em dias de duração"><div class="v ${cls}">${DPP>0?'+':''}${pct1(DPP).replace('%',' p.p.')}</div><div class="l">Desvio</div><div class="s ${late?'atr':''}">${late} atrasada${late===1?'':'s'} · ${run} em curso</div></div>`;
+  const F={all:o=>true,run:o=>o.st==='run',late:o=>o.st==='late',done:o=>o.st==='done'};
+  const vis=xs.filter(F[schFil]).sort((u,v)=>u.dd-v.dd||u.x.d1-v.x.d1);
+  $('schT').innerHTML=`${vis.length} de ${xs.length} atividades · ${done} concluída${done===1?'':'s'}. Clique numa linha para acender as peças dela no 3D.`;
+  const SC={done:'var(--ok)',run:'var(--accent)',late:'var(--late)',fut:'var(--mute)'};
+  let h='<thead><tr><th>Atividade</th><th>Término</th><th style="width:88px">Base / Real / Modelo</th><th class="n">Desvio</th></tr></thead><tbody>';
+  vis.slice(0,300).forEach(o=>{const x=o.x;
+    h+=`<tr class="r${ACTHL&&ACTHL.has(x.idx)?' on':''}" data-a="${x.idx}" title="${x.id} · ${x.sub} · ${x.disc}&#10;${fmtI(x.ini)}${x.fl&1?' (real)':''} → ${fmtI(x.fim)}${x.fl&2?' (real)':''}&#10;${o.n} peças no 3D">`+
+      `<td><b>${x.nome}</b><div class="sl">${x.grp||x.sub}</div></td>`+
+      `<td class="n" style="color:${SC[o.st]}">${fmtI(x.fim)}</td>`+
+      `<td>`+
+        `<span class="b3" title="Previsto pela linha de base"><i style="width:${o.lb.toFixed(0)}%;background:var(--mute)"></i></span>`+
+        `<span class="b3" title="Real do Cronograma Master"><i style="width:${o.re.toFixed(0)}%;background:${SC[o.st]}"></i></span>`+
+        `<span class="b3" title="Concluído no controle de tubulação">${o.mo==null?'':`<i style="width:${o.mo.toFixed(0)}%;background:var(--tub)"></i>`}</span>`+
+        `<div class="sl">${pct1(o.lb)} · ${pct1(o.re)} · ${o.mo==null?'–':pct1(o.mo)}</div></td>`+
+      `<td class="n ${o.dd<0?'atr':(o.dd>0?'adi':'')}">${o.dd>0?'+':''}${o.dd} d</td></tr>`});
+  h+='</tbody>';if(vis.length>300)h+=`<tfoot><tr><td colspan="4" class="sl">+${vis.length-300} atividades; use os filtros ou refine a seleção.</td></tr></tfoot>`;
+  $('schTb').innerHTML=h;
+  $('schTb').querySelectorAll('tr.r').forEach(tr=>tr.onclick=()=>hlAct(+tr.dataset.a))}
+function hlAct(idx){const was=ACTHL&&ACTHL.has(idx);ACTHL=was?null:new Set([idx]);
+  if(!was){const x=ACT[idx];if(x&&x.d1!=null)setDay(Math.min(x.d1,dmax))}
+  A.forEach(writeState);drawSched()}
+$('schF').querySelectorAll('button').forEach(b=>b.onclick=()=>{schFil=b.dataset.f;$('schF').querySelectorAll('button').forEach(c=>c.classList.toggle('on',c===b));drawSched()});
+
+// ---------- restrições de campo (nascem na peça) ----------
+// Lista compartilhada num Worker da Cloudflare; se a rede bloquear, fica no aparelho e
+// sobe sozinha na próxima vez que o servidor responder.
+let PICK0=null,RESTR=[],RSHL=null,rsFil='open',rsEdit=null,rsBusy=false;
+const RSK='restr.v1', RSKQ='restr.fila.v1', RSKU='restr.quem', RSKA='restr.api';
+const RSAPI_PAD='';
+const rsApi=()=>{try{return localStorage.getItem(RSKA)||RSAPI_PAD}catch(e){return RSAPI_PAD}};
+const rsQuem=()=>{try{return localStorage.getItem(RSKU)||''}catch(e){return ''}};
+const hojeISO=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
+function rsLoadLocal(){try{RESTR=JSON.parse(localStorage.getItem(RSK)||'[]')}catch(e){RESTR=[]}
+  try{RSFILA=JSON.parse(localStorage.getItem(RSKQ)||'[]')}catch(e){RSFILA=[]}}
+let RSFILA=[];
+function rsSaveLocal(){try{localStorage.setItem(RSK,JSON.stringify(RESTR));localStorage.setItem(RSKQ,JSON.stringify(RSFILA))}catch(e){}}
+function rsProxId(){let n=0;RESTR.forEach(r=>{const m=/^R-(\d+)$/.exec(r.id||'');if(m)n=Math.max(n,+m[1])});
+  RSFILA.forEach(r=>{const m=/^R-(\d+)$/.exec(r.id||'');if(m)n=Math.max(n,+m[1])});
+  return 'R-'+String(n+1).padStart(3,'0')}
+async function rsSync(quieto){const u=rsApi();if(!u){rsStatus('Sem servidor configurado: as restrições ficam só neste aparelho.');return false}
+  try{
+    if(RSFILA.length){for(const r of RSFILA.slice()){const q=await fetch(u.replace(/\/$/,'')+'/r',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(r)});
+      if(!q.ok)throw new Error('POST '+q.status);RSFILA=RSFILA.filter(z=>z!==r)}}
+    const res=await fetch(u.replace(/\/$/,'')+'/r',{cache:'no-store'});if(!res.ok)throw new Error('GET '+res.status);
+    const j=await res.json();if(Array.isArray(j.items))RESTR=j.items;
+    rsSaveLocal();rsStatus(`Sincronizado · <b>${RESTR.length}</b> restriç${RESTR.length===1?'ão':'ões'} na lista da equipe.`);return true}
+  catch(e){rsStatus(`<b>Sem conexão com o servidor.</b> Mostrando o que está neste aparelho${RSFILA.length?` · ${RSFILA.length} aguardando envio`:''}.`);return false}
+  finally{if(!quieto){drawRestr();rsBadge()}}}
+function rsStatus(h){const el=$('rsSync');if(el)el.innerHTML=h}
+function rsVenc(r){return r.st!=='ok'&&r.pz&&r.pz<hojeISO()}
+function rsBadge(){const n=RESTR.filter(r=>r.st!=='ok').length,v=RESTR.filter(rsVenc).length;
+  const b=$('rsBadge');if(b)b.innerHTML=n?` <span class="pz ${v?'at':'ab'}">${n}</span>`:''}
+function rsPieceTxt(a,i){const rs=RESTR.filter(r=>r.st!=='ok'&&r.ar===a.c&&r.el===i);
+  if(!rs.length)return '';
+  return `<div style="margin-top:4px;border-top:1px solid var(--line);padding-top:4px"><span class="k">Restrições abertas:</span> `+
+    rs.map(r=>`<span class="pz ${rsVenc(r)?'at':'ab'}">${r.id}</span> ${r.nm}`).join('<br>')+`</div>`}
+function rsNew(){if(!PICK0){alert('Toque numa peça primeiro.');return}
+  rsEdit=null;$('rsTit').textContent='Nova restrição';
+  const [a,i]=PICK0;
+  $('rsCtx').innerHTML=`<b>${a.c}</b> · ${a.g[a.grp[i]]}${a.ln[i]?` · linha <b>${LN[a.ln[i]]}</b>`:''}<br>${CN[CATS[a.cat[i]]]} · peça nº ${i}`;
+  $('rsNm').value='';$('rsDs').value='';
+  const d=new Date(Date.now()+7*864e5);$('rsPz').value=d.toISOString().slice(0,10);
+  $('rsOv').hidden=false;setTimeout(()=>$('rsNm').focus(),60)}
+$('rsCan').onclick=()=>{$('rsOv').hidden=true};
+$('rsSav').onclick=async()=>{const nm=$('rsNm').value.trim();if(!nm){$('rsNm').focus();return}
+  if(rsBusy)return;rsBusy=true;
+  let quem=rsQuem();
+  if(!quem){quem=(prompt('Seu nome (aparece em quem registrou):')||'').trim();if(quem)try{localStorage.setItem(RSKU,quem)}catch(e){}}
+  const [a,i]=PICK0;
+  const r={id:rsProxId(),nm,re:$('rsRe').value,pz:$('rsPz').value||null,ds:$('rsDs').value.trim(),
+    ar:a.c,sis:a.g[a.grp[i]],ln:a.ln[i]?LN[a.ln[i]]:null,dis:CN[CATS[a.cat[i]]],el:i,
+    xyz:[+a.cx[i].toFixed(2),+a.cy[i].toFixed(2),+a.cz[i].toFixed(2)],
+    st:'ab',quem:quem||'—',em:new Date().toISOString()};
+  RESTR=RESTR.concat([r]);RSFILA=RSFILA.concat([r]);rsSaveLocal();
+  $('rsOv').hidden=true;rsBusy=false;openTab('R');drawRestr();rsBadge();
+  await rsSync();
+  const [av,iv]=PICK0;showPick(av,iv)};
+async function rsToggle(id){const r=RESTR.find(z=>z.id===id);if(!r)return;
+  r.st=r.st==='ok'?'ab':'ok';r.fim=r.st==='ok'?new Date().toISOString():null;
+  RSFILA=RSFILA.filter(z=>z.id!==id).concat([r]);rsSaveLocal();drawRestr();rsBadge();await rsSync()}
+function rsFocus(r){const a=A.find(z=>z.c===r.ar);if(!a||!a.loaded||r.el==null){RSHL=null;return}
+  RSHL=RSHL&&RSHL[0]===r.ar&&RSHL[1]===r.el?null:[r.ar,r.el];
+  if(RSHL){const c=new THREE.Vector3(a.cx[r.el],a.cy[r.el],a.cz[r.el]);
+    const dir=CAM.position.clone().sub(OC.target).normalize();OC.target.copy(c);CAM.position.copy(c.clone().add(dir.multiplyScalar(26)))}
+  A.forEach(writeState);drawRestr()}
+function drawRestr(){if($('tabR').hidden)return;rsBadge();
+  const F={open:r=>r.st!=='ok',late:rsVenc,done:r=>r.st==='ok',all:()=>true};
+  const vis=RESTR.filter(F[rsFil]).sort((u,v)=>(u.pz||'9')<(v.pz||'9')?-1:1);
+  const ab=RESTR.filter(r=>r.st!=='ok').length,vc=RESTR.filter(rsVenc).length;
+  $('rsT').innerHTML=RESTR.length?`<b>${ab}</b> aberta${ab===1?'':'s'} · <b class="${vc?'atr':''}">${vc}</b> vencida${vc===1?'':'s'} · ${RESTR.length-ab} resolvida${RESTR.length-ab===1?'':'s'}. Toque num item para achar a peça no 3D.`
+    :'Nenhuma restrição registrada. Toque numa peça no 3D e use “Registrar restrição nesta peça”.';
+  const L=$('rsL');if(!vis.length){L.innerHTML='<div class="msg" style="padding:8px 2px">Nada neste filtro.</div>';return}
+  L.innerHTML=vis.map(r=>{const v=rsVenc(r),on=RSHL&&RSHL[0]===r.ar&&RSHL[1]===r.el;
+    return `<div class="ri${on?' on':''}" data-id="${r.id}">
+      <div class="t"><span class="nm">${r.nm}</span><span class="pz ${r.st==='ok'?'rs':(v?'at':'ab')}">${r.st==='ok'?'resolvida':(v?'vencida':'aberta')}</span></div>
+      <div class="mt"><span class="id">${r.id}</span> · ${r.re}${r.pz?` · prazo ${fmtI(r.pz)}`:''}<br>
+      área ${r.ar} · ${r.sis}${r.ln?` · linha ${r.ln}`:''}<br>
+      ${r.ds?r.ds.replace(/[<>]/g,'')+'<br>':''}registrada por ${r.quem} em ${new Date(r.em).toLocaleDateString('pt-BR')}</div>
+      <div style="margin-top:4px;display:flex;gap:6px"><button type="button" class="rsb sec2" style="margin:0;padding:3px 8px;font-size:11px" data-ok="${r.id}">${r.st==='ok'?'Reabrir':'Marcar resolvida'}</button>
+      <button type="button" class="rsb sec2" style="margin:0;padding:3px 8px;font-size:11px" data-wa="${r.id}">Texto p/ WhatsApp</button></div></div>`}).join('');
+  L.querySelectorAll('.ri').forEach(el=>el.onclick=e=>{if(e.target.dataset.ok||e.target.dataset.wa)return;
+    const r=RESTR.find(z=>z.id===el.dataset.id);if(r)rsFocus(r)});
+  L.querySelectorAll('[data-ok]').forEach(b=>b.onclick=e=>{e.stopPropagation();rsToggle(b.dataset.ok)});
+  L.querySelectorAll('[data-wa]').forEach(b=>b.onclick=e=>{e.stopPropagation();const r=RESTR.find(z=>z.id===b.dataset.wa);if(!r)return;
+    const t=`*${r.id} · ${r.nm}*\nResponsável: ${r.re}${r.pz?`\nPrazo: ${fmtI(r.pz)}`:''}\nÁrea ${r.ar} · ${r.sis}${r.ln?`\nLinha ${r.ln}`:''}${r.ds?`\n${r.ds}`:''}\nRegistrada por ${r.quem}`;
+    navigator.clipboard?.writeText(t).then(()=>{b.textContent='Copiado!';setTimeout(()=>b.textContent='Texto p/ WhatsApp',1800)},()=>prompt('Copie o texto:',t))})}
+$('rsF').querySelectorAll('button').forEach(b=>b.onclick=()=>{rsFil=b.dataset.f;$('rsF').querySelectorAll('button').forEach(c=>c.classList.toggle('on',c===b));drawRestr()});
+$('rsCfg').onclick=()=>{const u=prompt('Endereço do servidor de restrições (deixe vazio para guardar só neste aparelho):',rsApi());
+  if(u!==null){try{localStorage.setItem(RSKA,u.trim())}catch(e){}}
+  const q=prompt('Seu nome (aparece em quem registrou):',rsQuem());
+  if(q!==null){try{localStorage.setItem(RSKU,q.trim())}catch(e){}}
+  rsSync()};
+window.rsNew=rsNew;window.rsFocus=rsFocus;
+rsLoadLocal();rsBadge();setTimeout(()=>rsSync(true).then(()=>{rsBadge();if(!$('tabR').hidden)drawRestr()}),1500);
+setInterval(()=>{if(document.visibilityState==='visible')rsSync(true).then(()=>{rsBadge();if(!$('tabR').hidden)drawRestr()})},60000);
 function drawActs(){const L=$('alist');if(!PROG){L.innerHTML='<div class="msg">Ative uma programação para ver as atividades ligadas ao que está selecionado.</div>';return}
   const cnt=new Map();A.forEach(a=>{if(!a.loaded)return;for(let i=0;i<a.n;i++)if(a.act[i]>=0&&selFlag(a,i))cnt.set(a.act[i],(cnt.get(a.act[i])||0)+1)});
   ACTSEL=(fresh&&catOn.size===CATS.length&&!lineSet.size)?null:new Set(cnt.keys());drawRun();kpiCtl();
@@ -1835,13 +2057,13 @@ $('imp').onchange=async e=>{const f=e.target.files[0];if(!f)return;$('imsg').tex
   catch(err){$('imsg').textContent='Não foi possível ler o arquivo: '+(err.message||err)+'. Use a exportação do Cronograma Master (colunas Activity ID, Activity Name, Units % Complete, Start, Finish).'}
   e.target.value=''};
 $('pbase').onclick=()=>applyProg(null);
-function pickInitial(){if(!LOADED)return;if(progId){const p=PROGS.find(z=>z.id===progId);applyProg(p||null);return}
+function pickInitial(){if(!LOADED)return;if(!PROGS.length&&window.__PROG0&&window.__PROG0.length){PROGS=window.__PROG0.slice();try{drawProgList()}catch(e){}}if(progId){const p=PROGS.find(z=>z.id===progId);applyProg(p||null);return}
   const p=[...PROGS].sort((u,v)=>u.dataStatus<v.dataStatus?1:-1)[0];applyProg(p||null)}
 (async()=>{try{
   db=window.claude&&claude.use?await claude.use('db'):null;
   const user=window.claude&&claude.use?await claude.use('user'):null;
   if(user){const w=await user.can('data.write');if(w===false)writable=false}
-  if(!db){$('dbmsg').innerHTML='<span class="warn">Registro compartilhado indisponível nesta visualização.</span> Importações valem só nesta sessão.';drawProgList();return}
+  if(!db){if(window.__PROG0&&window.__PROG0.length)PROGS=window.__PROG0.slice();$('dbmsg').innerHTML=PROGS.length?'Cronograma publicado junto com o site (somente leitura).':'<span class="warn">Registro compartilhado indisponível nesta visualização.</span> Importações valem só nesta sessão.';drawProgList();pickInitial();return}
   $('dbmsg').textContent=writable?'Programações compartilhadas: o que você importar fica salvo para todos que abrem esta página.':'Você pode ver as programações, mas não importar.';
   if(!writable)$('imp').disabled=true;
   try{db.collection('config').onSnapshot(x=>{const d2=x.docs.find(z=>z.id==='qr');if(d2&&d2.data().base){QRBASE=d2.data().base;try{localStorage.setItem('qrbase',QRBASE)}catch(e){}}},()=>{})}catch(e){}
