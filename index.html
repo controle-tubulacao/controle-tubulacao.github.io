@@ -1441,6 +1441,7 @@ body.mob.vcampo .right .sec:not(:first-child){display:none}
       </div>
       <div class="tabp" id="tabR" hidden>
         <div class="rsy" id="rsSync">—</div>
+        <div class="rsy" id="offSt" style="margin-top:6px">Guardando o painel neste aparelho…</div>
         <div class="schf" id="rsF"><button type="button" data-f="open" class="on">Abertas</button><button type="button" data-f="late">Vencidas</button><button type="button" data-f="done">Resolvidas</button><button type="button" data-f="all">Todas</button></div>
         <div class="sech">Apontamentos de avanço</div>
         <div class="msg" id="avT"></div>
@@ -2012,8 +2013,12 @@ async function rsSync(quieto){const u=rsApi();if(!u){rsStatus('Sem servidor conf
   finally{if(!quieto){drawRestr();rsBadge()}}}
 function rsStatus(h){const el=$('rsSync');if(el)el.innerHTML=h;
   // o aviso tem que aparecer fora da aba Campo: quem nunca abre a aba nao percebe que parou de receber
-  const t=$('rsHdr');if(!t)return;const mal=!/^Sincronizado/.test(h);t.hidden=!mal;
-  if(mal)t.innerHTML='&#9888; <b>Sem conexao com o servidor dos apontamentos.</b> O que aparece nesta tela pode estar atrasado: avancos lancados por outras pessoas nao chegam ate a conexao voltar. Veja o motivo na aba <b>Campo</b>.'}
+  const t=$('rsHdr');if(!t)return;
+  const n=(typeof RSFILA!=='undefined'&&RSFILA.length)||0,mal=!/^Sincronizado/.test(h),s=n>1?'s':'';
+  t.hidden=!(mal||n);if(!(mal||n))return;
+  t.innerHTML=(mal?'&#9888; <b>Sem conexao com o servidor dos apontamentos.</b> O que aparece nesta tela pode estar atrasado: avancos lancados por outras pessoas nao chegam ate a conexao voltar. ':'')
+    +(n?`<b>${n} apontamento${s} feito${s} neste aparelho na fila</b> &mdash; sobe${n>1?'m':''} sozinho${s} quando a rede voltar. Pode fechar a pagina, nao perde. `:'')
+    +(mal?'Veja o motivo na aba <b>Campo</b>.':'')}
 function rsVenc(r){return r.st!=='ok'&&r.pz&&r.pz<hojeISO()}
 function rsBadge(){const n=RESTR.filter(r=>r.tp!=='a'&&r.st!=='ok').length,v=RESTR.filter(r=>r.tp!=='a'&&rsVenc(r)).length;
   const b=$('rsBadge');if(b)b.innerHTML=n?` <span class="pz ${v?'at':'ab'}">${n}</span>`:''}
@@ -2096,6 +2101,21 @@ window.rsNew=rsNew;window.rsFocus=rsFocus;
 
 rsLoadLocal();rsBadge();setTimeout(()=>rsSync(true).then(()=>{rsBadge();if(!$('tabR').hidden)drawRestr()}),1500);
 setInterval(()=>{if(document.visibilityState==='visible')rsSync(true).then(()=>{rsBadge();if(!$('tabR').hidden)drawRestr()})},60000);
+// campo sem internet: o apontamento ja fica numa fila local; isto tenta enviar no instante
+// em que o sinal volta, em vez de esperar o proximo minuto
+const rsAgora=()=>rsSync(true).then(()=>{rsBadge();if(!$('tabR').hidden)drawRestr()});
+addEventListener('online',rsAgora);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')rsAgora()});
+// guarda o painel no aparelho para abrir sem internet (sw.js)
+function offStatus(){const e=$('offSt');if(!e)return;
+  e.innerHTML=(navigator.serviceWorker&&navigator.serviceWorker.controller)
+    ?'&#10003; <b>Painel guardado neste aparelho.</b> Abre sem internet, com as areas que voce ja carregou. Apontamento feito sem sinal fica na fila e sobe sozinho depois.'
+    :'Guardando o painel neste aparelho&hellip; deixe a pagina aberta uns segundos <b>com internet</b>. Depois ela abre mesmo sem rede.'}
+if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
+  navigator.serviceWorker.register('sw.js').then(()=>{offStatus();
+    navigator.serviceWorker.addEventListener('controllerchange',offStatus);setTimeout(offStatus,3000)}).catch(()=>{
+    const e=$('offSt');if(e)e.textContent='Para usar sem internet, abra o painel pelo endereco do site: controle-tubulacao.github.io'})}
+else{const e=$('offSt');if(e)e.textContent='Para usar sem internet, abra o painel pelo endereco do site: controle-tubulacao.github.io'}
 
 // ---------- apontamento de avanço feito na peça, pelo campo ----------
 // Vale sobre a planilha só na cor; o peso montado continua vindo do controle.
