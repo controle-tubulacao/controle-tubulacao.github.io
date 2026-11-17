@@ -12,7 +12,9 @@ const V = 'p4d-v1';
 const CASCA = V + '-casca';
 const AREAS = V + '-areas';
 
-const SHELL = ['./', './index.html', './controles.json', './programacoes.json'];
+// dm/index.json entra aqui de proposito: a pagina o busca antes de o guardado assumir o
+// controle, entao se nao for guardado na instalacao o painel nao abre sem internet.
+const SHELL = ['./', './index.html', './controles.json', './programacoes.json', './dm/index.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil((async () => {
