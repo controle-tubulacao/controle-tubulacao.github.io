@@ -1299,6 +1299,17 @@ canvas#c{touch-action:none}
 .pz.rs{background:rgba(87,192,138,.18);color:var(--ok)}
 .rsy{font-size:10px;color:var(--mute);margin-bottom:5px}
 .rsy b{color:var(--fg)}
+
+.avb{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.avb button{flex:1;min-width:74px;font:inherit;font-size:11px;font-weight:700;padding:6px 4px;border-radius:6px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);cursor:pointer}
+.avb button[data-nv="1"]{border-color:#caa23a}.avb button[data-nv="2"]{border-color:#4c8fe8}.avb button[data-nv="3"]{border-color:var(--ok)}
+.avb button:hover{filter:brightness(1.25)}
+.avb button.on{color:#06110e}
+.avb button[data-nv="1"].on{background:#e8c252}.avb button[data-nv="2"].on{background:#4c8fe8;color:#fff}.avb button[data-nv="3"].on{background:var(--ok)}
+.avb button[data-nv="0"]{flex-basis:100%;border-style:dashed;font-weight:600;color:var(--mute)}
+.ave{display:flex;gap:5px;align-items:center;font-size:11px;color:var(--mute);margin-top:5px}
+.sech{font-family:var(--display);font-size:15px;letter-spacing:.02em;margin:10px 0 4px;color:var(--fg)}
+.sech:first-child{margin-top:0}
 </style>
 
 <div class="app">
@@ -1374,7 +1385,7 @@ canvas#c{touch-action:none}
         <div title="Peso de tubulação montado"><div class="v" id="kRe">–</div><div class="l">Montado (t)</div></div>
         <div title="Peso que falta montar"><div class="v" id="kDv">–</div><div class="l" id="kDvL">Saldo</div></div>
       </div>
-      <div class="tabs" role="tablist"><button type="button" class="on" data-t="G" role="tab">Avanço</button><button type="button" data-t="E" role="tab">Em execução</button><button type="button" data-t="C" role="tab">Chuva</button><button type="button" data-t="P" role="tab">Cronograma</button><button type="button" data-t="R" role="tab">Restrições<span id="rsBadge"></span></button></div>
+      <div class="tabs" role="tablist"><button type="button" class="on" data-t="G" role="tab">Avanço</button><button type="button" data-t="E" role="tab">Em execução</button><button type="button" data-t="C" role="tab">Chuva</button><button type="button" data-t="P" role="tab">Cronograma</button><button type="button" data-t="R" role="tab">Campo<span id="rsBadge"></span></button></div>
       <div class="tabp" id="tabG"><canvas id="curve" width="560" height="300" aria-label="Curva S planejado e real"></canvas><div class="msg" id="selinfo"></div></div>
       <div class="tabp" id="tabE" hidden><div id="pickE" class="pickE" hidden></div><div id="areaSum"></div><div id="runT"></div><div id="runL"></div></div>
       <div class="tabp" id="tabC" hidden><div class="msg" id="rainT"></div><canvas id="rainc" width="560" height="240" aria-label="Chuva diária"></canvas><div class="rk" id="rainK"></div><div class="msg" id="rainS" style="margin-top:6px"></div></div>
@@ -1387,8 +1398,12 @@ canvas#c{touch-action:none}
       <div class="tabp" id="tabR" hidden>
         <div class="rsy" id="rsSync">—</div>
         <div class="schf" id="rsF"><button type="button" data-f="open" class="on">Abertas</button><button type="button" data-f="late">Vencidas</button><button type="button" data-f="done">Resolvidas</button><button type="button" data-f="all">Todas</button></div>
+        <div class="sech">Apontamentos de avanço</div>
+        <div class="msg" id="avT"></div>
+        <div class="schw" id="avL" style="max-height:24vh"></div>
+        <div class="sech">Restrições</div>
         <div class="msg" id="rsT"></div>
-        <div class="schw" id="rsL"></div>
+        <div class="schw" id="rsL" style="max-height:30vh"></div>
         <button type="button" class="rsb sec2" id="rsCfg" style="margin-top:8px">Configurar servidor e quem registra…</button>
       </div>
     </div>
@@ -1757,7 +1772,7 @@ function goHome(){OC.target.copy(HOME_T);CAM.position.copy(HOME_P);nearFit();OC.
 OC.addEventListener('change',()=>{clampView();nearFit()});window.__CAM=CAM;window.__OC=OC;
 function showPick(a,i){const p=$('pick');const re=a.real[i]<1e5?fmt(a.real[i]):'não lançado';const st=a.real[i]<=day?'montado':a.plan[i]<=day?'previsto, não montado':'futuro';
   const pe=$('pickE');p.hidden=true;
-  pe.innerHTML=`<div class="pkh"><b>Peça selecionada</b><button type="button" class="ghost" onclick="this.parentNode.parentNode.hidden=true" title="Fechar">×</button></div><div><b>${a.c}</b> · ${a.name.replace(/\.nwd$/i,'')}</div><div><span class="k">Sistema:</span> ${a.g[a.grp[i]]}</div>${a.ln[i]?`<div><span class="k">Linha:</span> ${LN[a.ln[i]]}</div><div><span class="k">Passa por:</span> ${whereTxt(a.ln[i])}</div>`:''}<div><span class="k">Disciplina:</span> ${CN[CATS[a.cat[i]]]}</div><div><span class="k">Planejado:</span> ${fmt(a.plan[i])}</div><div><span class="k">Real:</span> ${re} · ${st}</div>${a.ctl&&a.ctl[i]?`<div><span class="k">Controle (planilha):</span> <span class="sw" style="background:${STC[a.ctl[i]-1]}"></span> ${STN[a.ctl[i]-1]}${OVRLN.has(a.ln[i]+'|'+a.c)?' · <b>ajuste manual</b> (campo informou inicio; planilha ainda nao atualizada)':''}${LNAGG&&a.ln[i]&&LNAGG.has(a.ln[i])?` · linha ${Math.round(100*LNAGG.get(a.ln[i])[1]/Math.max(1e-9,LNAGG.get(a.ln[i])[0]))}% montada`:``}</div>`:''}${a.act[i]>=0?actTxt(ACT[a.act[i]]):''}${rsPieceTxt(a,i)}<button type="button" class="rsb" onclick="rsNew()">Registrar restrição nesta peça</button>`;PICK0=[a,i];pe.hidden=false;openTab('E')}
+  pe.innerHTML=`<div class="pkh"><b>Peça selecionada</b><button type="button" class="ghost" onclick="this.parentNode.parentNode.hidden=true" title="Fechar">×</button></div><div><b>${a.c}</b> · ${a.name.replace(/\.nwd$/i,'')}</div><div><span class="k">Sistema:</span> ${a.g[a.grp[i]]}</div>${a.ln[i]?`<div><span class="k">Linha:</span> ${LN[a.ln[i]]}</div><div><span class="k">Passa por:</span> ${whereTxt(a.ln[i])}</div>`:''}<div><span class="k">Disciplina:</span> ${CN[CATS[a.cat[i]]]}</div><div><span class="k">Planejado:</span> ${fmt(a.plan[i])}</div><div><span class="k">Real:</span> ${re} · ${st}</div>${a.ctl&&a.ctl[i]?`<div><span class="k">Controle (planilha):</span> <span class="sw" style="background:${STC[a.ctl[i]-1]}"></span> ${STN[a.ctl[i]-1]}${OVRLN.has(a.ln[i]+'|'+a.c)?' · <b>ajuste manual</b> (campo informou inicio; planilha ainda nao atualizada)':''}${LNAGG&&a.ln[i]&&LNAGG.has(a.ln[i])?` · linha ${Math.round(100*LNAGG.get(a.ln[i])[1]/Math.max(1e-9,LNAGG.get(a.ln[i])[0]))}% montada`:``}</div>`:''}${a.act[i]>=0?actTxt(ACT[a.act[i]]):''}${rsPieceTxt(a,i)}${avPieceTxt(a,i)}<button type="button" class="rsb" onclick="rsNew()">Registrar restrição nesta peça</button>`;PICK0=[a,i];pe.hidden=false;openTab('E')}
 function actTxt(x){return `<div style="margin-top:4px;border-top:1px solid var(--line);padding-top:4px"><span class="k">Atividade (cronograma):</span> ${x.id}</div><div>${x.nome}</div><div><span class="k">Avanço da atividade:</span> ${x.pct}% · ${fmtI(x.ini)}${x.fl&1?' A':''} → ${fmtI(x.fim)}${x.fl&2?' A':''}</div>`}
 const fmtI=s=>s?new Date(s+'T12:00:00').toLocaleDateString('pt-BR'):'–';
 // ---------- programações (Cronograma Master do Primavera) ----------
@@ -1948,14 +1963,14 @@ async function rsSync(quieto){const u=rsApi();if(!u){rsStatus('Sem servidor conf
       if(!q.ok)throw new Error('POST '+q.status);RSFILA=RSFILA.filter(z=>z!==r)}}
     const res=await fetch(u.replace(/\/$/,'')+'/r',{cache:'no-store'});if(!res.ok)throw new Error('GET '+res.status);
     const j=await res.json();if(Array.isArray(j.items))RESTR=j.items;
-    rsSaveLocal();rsStatus(`Sincronizado · <b>${RESTR.length}</b> restriç${RESTR.length===1?'ão':'ões'} na lista da equipe.`);return true}
+    rsSaveLocal();const nr=RESTR.filter(x=>x.tp!=='a').length,na=avAtuais().filter(x=>x.nv).length;rsStatus(`Sincronizado · <b>${nr}</b> restriç${nr===1?'ão':'ões'} e <b>${na}</b> apontamento${na===1?'':'s'} na lista da equipe.`);avRefresh();return true}
   catch(e){rsStatus(`<b>Sem conexão com o servidor.</b> Mostrando o que está neste aparelho${RSFILA.length?` · ${RSFILA.length} aguardando envio`:''}.`);return false}
   finally{if(!quieto){drawRestr();rsBadge()}}}
 function rsStatus(h){const el=$('rsSync');if(el)el.innerHTML=h}
 function rsVenc(r){return r.st!=='ok'&&r.pz&&r.pz<hojeISO()}
-function rsBadge(){const n=RESTR.filter(r=>r.st!=='ok').length,v=RESTR.filter(rsVenc).length;
+function rsBadge(){const n=RESTR.filter(r=>r.tp!=='a'&&r.st!=='ok').length,v=RESTR.filter(r=>r.tp!=='a'&&rsVenc(r)).length;
   const b=$('rsBadge');if(b)b.innerHTML=n?` <span class="pz ${v?'at':'ab'}">${n}</span>`:''}
-function rsPieceTxt(a,i){const rs=RESTR.filter(r=>r.st!=='ok'&&r.ar===a.c&&r.el===i);
+function rsPieceTxt(a,i){const rs=RESTR.filter(r=>r.tp!=='a'&&r.st!=='ok'&&r.ar===a.c&&r.el===i);
   if(!rs.length)return '';
   return `<div style="margin-top:4px;border-top:1px solid var(--line);padding-top:4px"><span class="k">Restrições abertas:</span> `+
     rs.map(r=>`<span class="pz ${rsVenc(r)?'at':'ab'}">${r.id}</span> ${r.nm}`).join('<br>')+`</div>`}
@@ -1988,11 +2003,12 @@ function rsFocus(r){const a=A.find(z=>z.c===r.ar);if(!a||!a.loaded||r.el==null){
   if(RSHL){const c=new THREE.Vector3(a.cx[r.el],a.cy[r.el],a.cz[r.el]);
     const dir=CAM.position.clone().sub(OC.target).normalize();OC.target.copy(c);CAM.position.copy(c.clone().add(dir.multiplyScalar(26)))}
   A.forEach(writeState);drawRestr()}
-function drawRestr(){if($('tabR').hidden)return;rsBadge();
+function drawRestr(){if($('tabR').hidden)return;rsBadge();drawAvan();
   const F={open:r=>r.st!=='ok',late:rsVenc,done:r=>r.st==='ok',all:()=>true};
-  const vis=RESTR.filter(F[rsFil]).sort((u,v)=>(u.pz||'9')<(v.pz||'9')?-1:1);
-  const ab=RESTR.filter(r=>r.st!=='ok').length,vc=RESTR.filter(rsVenc).length;
-  $('rsT').innerHTML=RESTR.length?`<b>${ab}</b> aberta${ab===1?'':'s'} · <b class="${vc?'atr':''}">${vc}</b> vencida${vc===1?'':'s'} · ${RESTR.length-ab} resolvida${RESTR.length-ab===1?'':'s'}. Toque num item para achar a peça no 3D.`
+  const RS=RESTR.filter(r=>r.tp!=='a');
+  const vis=RS.filter(F[rsFil]).sort((u,v)=>(u.pz||'9')<(v.pz||'9')?-1:1);
+  const ab=RS.filter(r=>r.st!=='ok').length,vc=RS.filter(rsVenc).length;
+  $('rsT').innerHTML=RS.length?`<b>${ab}</b> aberta${ab===1?'':'s'} · <b class="${vc?'atr':''}">${vc}</b> vencida${vc===1?'':'s'} · ${RS.length-ab} resolvida${RS.length-ab===1?'':'s'}. Toque num item para achar a peça no 3D.`
     :'Nenhuma restrição registrada. Toque numa peça no 3D e use “Registrar restrição nesta peça”.';
   const L=$('rsL');if(!vis.length){L.innerHTML='<div class="msg" style="padding:8px 2px">Nada neste filtro.</div>';return}
   L.innerHTML=vis.map(r=>{const v=rsVenc(r),on=RSHL&&RSHL[0]===r.ar&&RSHL[1]===r.el;
@@ -2018,6 +2034,62 @@ $('rsCfg').onclick=()=>{const u=prompt('Endereço do servidor de restrições (d
 window.rsNew=rsNew;window.rsFocus=rsFocus;
 rsLoadLocal();rsBadge();setTimeout(()=>rsSync(true).then(()=>{rsBadge();if(!$('tabR').hidden)drawRestr()}),1500);
 setInterval(()=>{if(document.visibilityState==='visible')rsSync(true).then(()=>{rsBadge();if(!$('tabR').hidden)drawRestr()})},60000);
+
+// ---------- apontamento de avanço feito na peça, pelo campo ----------
+// Vale sobre a planilha só na cor; o peso montado continua vindo do controle.
+const NVN=['segue a planilha','não iniciada','em andamento','concluída'];
+function avLista(){return RESTR.filter(r=>r.tp==='a')}
+function avAtuais(){const m=new Map();
+  avLista().forEach(r=>{const k=r.ar+'|'+(r.esc==='peca'?('#'+r.el):(r.ln||'?'));
+    const p=m.get(k);if(!p||(r.em||'')>(p.em||''))m.set(k,r)});
+  return [...m.values()]}
+function avApply(){const to=CATS.indexOf('TUB');
+  avAtuais().forEach(r=>{if(!r.nv)return;const a=A.find(z=>z.c===r.ar);if(!a||!a.loaded||!a.ctl)return;
+    if(r.esc==='peca'){if(r.el!=null&&r.el<a.n&&a.ctl[r.el]!=null){a.ctl[r.el]=r.nv;if(a.ln[r.el])OVRLN.add(a.ln[r.el]+'|'+a.c)}return}
+    const k=r.ln?LN.indexOf(r.ln):-1;if(k<1)return;
+    for(let i=0;i<a.n;i++)if(a.ln[i]===k&&a.cat[i]===to){a.ctl[i]=r.nv;OVRLN.add(k+'|'+a.c)}})}
+function avRefresh(){try{if(CTL)applyCtl(CTL);else A.forEach(writeState)}catch(e){}}
+function avDe(a,i){const ln=a.ln[i]?LN[a.ln[i]]:null;
+  return avAtuais().find(r=>r.ar===a.c&&(r.esc==='peca'?r.el===i:(ln&&r.ln===ln)))||null}
+function avPieceTxt(a,i){const r=avDe(a,i);const esc=$('avEsc')&&$('avEsc').checked;
+  const atual=r?r.nv:0;
+  return `<div style="margin-top:6px;border-top:1px solid var(--line);padding-top:5px">
+    <span class="k">Apontar avanço no campo:</span>
+    <div class="avb">
+      <button type="button" data-nv="1" class="${atual===1?'on':''}" onclick="avSet(1)">Não iniciada</button>
+      <button type="button" data-nv="2" class="${atual===2?'on':''}" onclick="avSet(2)">Em andamento</button>
+      <button type="button" data-nv="3" class="${atual===3?'on':''}" onclick="avSet(3)">Concluída</button>
+      ${r&&r.nv?`<button type="button" data-nv="0" onclick="avSet(0)">voltar a seguir a planilha</button>`:''}
+    </div>
+    <label class="ave"><input type="checkbox" id="avEsc" ${esc!==false?'checked':''}> aplicar na linha toda desta área</label>
+    ${r&&r.nv?`<div class="mt" style="font-size:10px;color:var(--mute);margin-top:4px">Hoje: <b>${NVN[r.nv]}</b> por ${r.quem} em ${new Date(r.em).toLocaleDateString('pt-BR')} · ${r.esc==='peca'?'só esta peça':'linha toda'}</div>`:''}
+  </div>`}
+async function avSet(nv){if(!PICK0)return;const [a,i]=PICK0;
+  const esc=($('avEsc')&&$('avEsc').checked)?'linha':'peca';
+  const ln=a.ln[i]?LN[a.ln[i]]:null;
+  if(esc==='linha'&&!ln){alert('Esta peça não tem linha de tubulação; o apontamento vai valer só para ela.');}
+  let quem=rsQuem();
+  if(!quem){quem=(prompt('Seu nome (aparece em quem apontou):')||'').trim();if(quem)try{localStorage.setItem(RSKU,quem)}catch(e){}}
+  let n=0;RESTR.concat(RSFILA).forEach(r=>{const m=/^A-(\d+)$/.exec(r.id||'');if(m)n=Math.max(n,+m[1])});
+  const r={id:'A-'+String(n+1).padStart(3,'0'),tp:'a',nm:`${ln||('peça '+i)} · ${NVN[nv]}`,
+    esc:(ln?esc:'peca'),nv,ar:a.c,sis:a.g[a.grp[i]],ln:ln,dis:CN[CATS[a.cat[i]]],el:i,
+    xyz:[+a.cx[i].toFixed(2),+a.cy[i].toFixed(2),+a.cz[i].toFixed(2)],
+    st:'ab',quem:quem||'—',em:new Date().toISOString()};
+  RESTR=RESTR.concat([r]);RSFILA=RSFILA.concat([r]);rsSaveLocal();
+  avRefresh();showPick(a,i);if(!$('tabR').hidden)drawRestr();
+  await rsSync()}
+function drawAvan(){const at=avAtuais().filter(r=>r.nv);
+  $('avT').innerHTML=at.length?`<b>${at.length}</b> apontamento${at.length===1?'':'s'} valendo sobre a planilha. A tonelagem continua a da planilha.`
+    :'Nenhum apontamento. Clique numa peça e use “Apontar avanço no campo”.';
+  const L=$('avL');if(!at.length){L.innerHTML='';return}
+  const SW=['','#e8c252','#4c8fe8','var(--ok)'];
+  L.innerHTML=at.sort((u,v)=>(v.em||'').localeCompare(u.em||'')).map(r=>
+    `<div class="ri" data-av="${r.id}"><div class="t"><span class="nm">${r.ln||('peça '+r.el)}</span>
+      <span class="pz" style="background:${SW[r.nv]};color:#06110e">${NVN[r.nv]}</span></div>
+     <div class="mt"><span class="id">${r.id}</span> · área ${r.ar} · ${r.sis} · ${r.esc==='peca'?'só uma peça':'linha toda'}<br>
+     por ${r.quem} em ${new Date(r.em).toLocaleDateString('pt-BR')}</div></div>`).join('');
+  L.querySelectorAll('[data-av]').forEach(el=>el.onclick=()=>{const r=at.find(z=>z.id===el.dataset.av);if(r)rsFocus(r)})}
+window.avSet=avSet;
 function drawActs(){const L=$('alist');if(!PROG){L.innerHTML='<div class="msg">Ative uma programação para ver as atividades ligadas ao que está selecionado.</div>';return}
   const cnt=new Map();A.forEach(a=>{if(!a.loaded)return;for(let i=0;i<a.n;i++)if(a.act[i]>=0&&selFlag(a,i))cnt.set(a.act[i],(cnt.get(a.act[i])||0)+1)});
   ACTSEL=(fresh&&catOn.size===CATS.length&&!lineSet.size)?null:new Set(cnt.keys());drawRun();kpiCtl();
@@ -2217,6 +2289,7 @@ function applyCtl(c){CTL=c;window.__lastCtl=c;window.__A=A;window.__LN=LN;window
         if(o.g&&a.g[a.grp[i]]!==o.g)continue;
         if(o.de!=null&&a.ctl[i]!==o.de)continue;
         a.ctl[i]=o.st;if(a.ln[i])OVRLN.add(a.ln[i]+'|'+a.c)}})})}
+  if(c)avApply();
   U.uHL.value=(CTL&&U.uCtl.value)?0:6;A.forEach(writeState);drawCtl(kg,tab,semLinha,sem3d);legend();kpiCtl();if(!$('tabE').hidden)drawRun()}
 function drawCtl(kg,tab,semLinha,sem3d){kg=kg.slice(0,3);const box=$('cleg');if(!CTL){box.innerHTML='<div class="msg">Nenhum controle em uso.</div>';$('ctab').innerHTML='';$('cmsg2').textContent='';drawCtlList();return}
   const T=kg.reduce((x,y)=>x+y,0)||1;const pct=v=>(100*v/T).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
