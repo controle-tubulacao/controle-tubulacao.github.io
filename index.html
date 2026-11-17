@@ -1310,6 +1310,28 @@ canvas#c{touch-action:none}
 .ave{display:flex;gap:5px;align-items:center;font-size:11px;color:var(--mute);margin-top:5px}
 .sech{font-family:var(--display);font-size:15px;letter-spacing:.02em;margin:10px 0 4px;color:var(--fg)}
 .sech:first-child{margin-top:0}
+
+/* celular: a ficha da peca vira uma folha que sobe de baixo, com os botoes de campo */
+body.mob #pickE{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:36;margin:0;
+  max-height:72vh;overflow:auto;background:var(--panel);border-top:1px solid var(--line);
+  border-radius:12px 12px 0 0;padding:12px 12px calc(14px + env(safe-area-inset-bottom,0px));
+  box-shadow:0 -10px 30px rgba(0,0,0,.5);font-size:13px;line-height:1.5}
+body.mob #pickE .pkh{position:sticky;top:-12px;background:var(--panel);padding:2px 0 6px;margin:-2px 0 4px}
+body.mob #pickE .pkh button{min-width:34px;min-height:34px;font-size:18px}
+body.mob #pickE .rsb{padding:11px;font-size:13px}
+body.mob #pickE .avb button{min-height:40px;font-size:12px}
+body.mob #pickE .ave{font-size:12px}
+body.mob #pickE .ave input{width:20px;height:20px}
+#mobCampo{position:fixed;right:10px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:34;
+  background:var(--accent);color:#04231c;border:none;border-radius:999px;font-family:inherit;font-weight:700;
+  font-size:13px;padding:11px 16px;box-shadow:0 4px 14px rgba(0,0,0,.45);cursor:pointer}
+#mobCampo b{background:var(--late);color:#fff;border-radius:999px;padding:0 6px;margin-left:5px;font-size:11px}
+body.mob.vcampo .right{display:block;position:fixed;inset:0;z-index:38;overflow:auto;
+  border-radius:0;padding:10px 10px calc(60px + env(safe-area-inset-bottom,0px))}
+body.mob.vcampo .right .sec:not(:first-child){display:none}
+#mobFech{position:fixed;left:10px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:39;
+  background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:999px;
+  font-family:inherit;font-size:13px;padding:11px 16px;cursor:pointer}
 </style>
 
 <div class="app">
@@ -2032,6 +2054,22 @@ $('rsCfg').onclick=()=>{const u=prompt('Endereço do servidor de restrições (d
   if(q!==null){try{localStorage.setItem(RSKU,q.trim())}catch(e){}}
   rsSync()};
 window.rsNew=rsNew;window.rsFocus=rsFocus;
+// ---------- celular: ficha da peca como folha de baixo e atalho para a aba Campo ----------
+(function(){try{
+  if(!document.body.classList.contains('mob'))return;
+  const pe=$('pickE');if(pe&&pe.parentNode!==document.body)document.body.appendChild(pe);
+  const bt=document.createElement('button');bt.type='button';bt.id='mobCampo';bt.innerHTML='Campo';
+  document.body.appendChild(bt);
+  const fe=document.createElement('button');fe.type='button';fe.id='mobFech';fe.textContent='◀ voltar ao 3D';
+  fe.hidden=true;document.body.appendChild(fe);
+  const abre=v=>{document.body.classList.toggle('vcampo',v);bt.hidden=v;fe.hidden=!v;
+    if(v){try{openTab('R')}catch(e){}}};
+  bt.onclick=()=>abre(true);fe.onclick=()=>abre(false);
+  window.__mobBadge=()=>{try{const n=RESTR.filter(r=>r.tp!=='a'&&r.st!=='ok').length;
+    bt.innerHTML='Campo'+(n?` <b>${n}</b>`:'')}catch(e){}};
+  setInterval(window.__mobBadge,8000);setTimeout(window.__mobBadge,2500);
+}catch(e){console.warn('mob campo',e)}})();
+
 rsLoadLocal();rsBadge();setTimeout(()=>rsSync(true).then(()=>{rsBadge();if(!$('tabR').hidden)drawRestr()}),1500);
 setInterval(()=>{if(document.visibilityState==='visible')rsSync(true).then(()=>{rsBadge();if(!$('tabR').hidden)drawRestr()})},60000);
 
