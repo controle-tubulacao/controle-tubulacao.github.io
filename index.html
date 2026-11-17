@@ -2002,7 +2002,13 @@ function rsSaveLocal(){try{localStorage.setItem(RSK,JSON.stringify(RESTR));local
 function rsProxId(){let n=0;RESTR.forEach(r=>{const m=/^R-(\d+)$/.exec(r.id||'');if(m)n=Math.max(n,+m[1])});
   RSFILA.forEach(r=>{const m=/^R-(\d+)$/.exec(r.id||'');if(m)n=Math.max(n,+m[1])});
   return 'R-'+String(n+1).padStart(3,'0')}
-async function rsSync(quieto){const u=rsApi();if(!u){rsStatus('Sem servidor configurado: as restrições ficam só neste aparelho.');return false}
+// Uma sincronizacao por vez. Sem esta trava, o aviso de rede voltando e o relogio de 60 s
+// podem disparar juntas e mandar o mesmo apontamento duas vezes: o servidor trata como
+// atualizacao do mesmo registro, mas gasta 4G da pessoa de graca.
+let RSBUSY=false;
+async function rsSync(quieto){if(RSBUSY)return false;RSBUSY=true;
+  try{return await rsSync1(quieto)}finally{RSBUSY=false}}
+async function rsSync1(quieto){const u=rsApi();if(!u){rsStatus('Sem servidor configurado: as restrições ficam só neste aparelho.');return false}
   try{
     if(RSFILA.length){for(const r of RSFILA.slice()){const q=await fetch(u.replace(/\/$/,'')+'/r',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(r)});
       if(!q.ok)throw new Error('POST '+q.status);RSFILA=RSFILA.filter(z=>z!==r)}}

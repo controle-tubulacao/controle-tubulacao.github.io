@@ -45,16 +45,21 @@ self.addEventListener('fetch', e => {
 
   // abrir o painel: tenta a rede primeiro para pegar versao nova, cai no guardado se nao tiver sinal
   if (q.mode === 'navigate') {
+    // so o painel pode ocupar o lugar de index.html no guardado. Sem isto, abrir qualquer
+    // outra pagina do site (a de teste do servidor, por exemplo) sobrescreve o painel guardado
+    // e, sem internet, o painel abriria mostrando a pagina errada.
+    const ehPainel = u.pathname === '/' || /\/index\.html$/.test(u.pathname);
     e.respondWith((async () => {
       try {
         const r = await fetch(q);
-        const c = await caches.open(CASCA);
-        c.put('./index.html', r.clone()).catch(() => {});
+        if (ehPainel && r && r.ok) {
+          caches.open(CASCA).then(c => c.put('./index.html', r.clone())).catch(() => {});
+        }
         return r;
       } catch (x) {
-        return (await caches.match('./index.html')) || (await caches.match('./')) ||
-               new Response('Painel nao esta guardado neste aparelho. Abra uma vez com internet.',
-                            { status: 503, headers: { 'content-type': 'text/plain; charset=utf-8' } });
+        const g = (await caches.match(q)) || (ehPainel ? await caches.match('./index.html') : null);
+        return g || new Response('Esta pagina nao esta guardada neste aparelho. Abra uma vez com internet.',
+                                 { status: 503, headers: { 'content-type': 'text/plain; charset=utf-8' } });
       }
     })());
     return;
