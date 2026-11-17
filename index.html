@@ -1332,6 +1332,25 @@ body.mob.vcampo .right .sec:not(:first-child){display:none}
 #mobFech{position:fixed;left:10px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:39;
   background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:999px;
   font-family:inherit;font-size:13px;padding:11px 16px;cursor:pointer}
+
+.mdOv{position:fixed;inset:0;background:rgba(6,10,9,.74);z-index:44;display:flex;align-items:center;justify-content:center;padding:14px}
+.mdOv .cd{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;width:min(380px,96vw)}
+.mdOv h3{font-family:var(--display);font-size:20px;margin:0 0 3px}
+.mdOv p{font-size:12px;color:var(--mute);margin:0 0 12px}
+.mdOv .nm{display:flex;flex-direction:column;gap:8px}
+.mdOv .nm button{padding:14px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);
+  font:inherit;font-size:16px;font-weight:700;letter-spacing:.02em;cursor:pointer}
+.mdOv .nm button:hover{border-color:var(--accent)}
+.pcq{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.pcq button{flex:1;min-width:52px;padding:10px 4px;border-radius:7px;border:1px solid var(--line);background:var(--panel2);
+  color:var(--fg);font:inherit;font-size:15px;font-weight:700;cursor:pointer}
+.pcq button:hover,.pcq button.on{background:#4c8fe8;border-color:#4c8fe8;color:#fff}
+.mdOv .pcin{display:flex;gap:8px;align-items:center}
+.mdOv input[type=number]{flex:1;background:var(--panel2);border:1px solid var(--line);color:var(--fg);border-radius:7px;
+  padding:11px;font:inherit;font-size:18px;font-weight:700;text-align:center}
+.mdOv .ac{display:flex;gap:8px;margin-top:14px}
+.mdOv .ac button{flex:1;padding:12px;border-radius:7px;border:none;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
+.mdOv .ok{background:var(--accent);color:#04231c}.mdOv .cc{background:transparent;border:1px solid var(--line);color:var(--fg)}
 </style>
 
 <div class="app">
@@ -1383,6 +1402,8 @@ body.mob.vcampo .right .sec:not(:first-child){display:none}
         <button type="button" onclick="document.getElementById('qrOv').hidden=true" style="margin-top:12px;background:#10b98a;border:none;color:#04231c;font-weight:700;padding:8px 16px;border-radius:6px">Fechar</button>
       </div>
     </div><div class="wx" id="wx" hidden></div>
+    <div id="qmOv" class="mdOv" hidden><div class="cd"><h3>Quem está apontando?</h3><p>Fica registrado no apontamento. Só precisa escolher uma vez neste aparelho.</p><div class="nm" id="qmL"></div></div></div>
+    <div id="pcOv" class="mdOv" hidden><div class="cd"><h3>Quanto da linha está montado?</h3><p id="pcSub">Percentual aproximado, só para acompanhamento.</p><div class="pcq" id="pcQ"></div><div class="pcin"><input type="number" id="pcIn" min="1" max="99" step="5" value="50"><span style="font-size:20px;font-weight:700">%</span></div><div class="ac"><button type="button" class="cc" id="pcCan">Cancelar</button><button type="button" class="ok" id="pcOk">Confirmar</button></div></div></div>
     <div id="rsOv" hidden><div class="cd">
       <h3 id="rsTit">Nova restrição</h3>
       <div class="ctx" id="rsCtx"></div>
@@ -2006,8 +2027,7 @@ function rsNew(){if(!PICK0){alert('Toque numa peça primeiro.');return}
 $('rsCan').onclick=()=>{$('rsOv').hidden=true};
 $('rsSav').onclick=async()=>{const nm=$('rsNm').value.trim();if(!nm){$('rsNm').focus();return}
   if(rsBusy)return;rsBusy=true;
-  let quem=rsQuem();
-  if(!quem){quem=(prompt('Seu nome (aparece em quem registrou):')||'').trim();if(quem)try{localStorage.setItem(RSKU,quem)}catch(e){}}
+  const quem=await quemAgora();
   const [a,i]=PICK0;
   const r={id:rsProxId(),nm,re:$('rsRe').value,pz:$('rsPz').value||null,ds:$('rsDs').value.trim(),
     ar:a.c,sis:a.g[a.grp[i]],ln:a.ln[i]?LN[a.ln[i]]:null,dis:CN[CATS[a.cat[i]]],el:i,
@@ -2076,6 +2096,24 @@ setInterval(()=>{if(document.visibilityState==='visible')rsSync(true).then(()=>{
 // ---------- apontamento de avanço feito na peça, pelo campo ----------
 // Vale sobre a planilha só na cor; o peso montado continua vindo do controle.
 const NVN=['segue a planilha','não iniciada','em andamento','concluída'];
+
+// ---------- quem aponta e quanto da linha esta montado ----------
+const EQUIPE=['ARQUIMEDES','PEDRO','DANIEL'];
+function pedeQuem(){return new Promise(res=>{
+  const L=$('qmL');L.innerHTML='';
+  EQUIPE.forEach(n=>{const b=document.createElement('button');b.type='button';b.textContent=n;
+    b.onclick=()=>{try{localStorage.setItem(RSKU,n)}catch(e){}$('qmOv').hidden=true;res(n)};L.appendChild(b)});
+  $('qmOv').hidden=false})}
+async function quemAgora(){const q=rsQuem();if(q&&EQUIPE.includes(q))return q;return await pedeQuem()}
+function pedePct(ini){return new Promise(res=>{
+  const Q=$('pcQ');Q.innerHTML='';
+  [10,20,30,40,50,60,70,80,90].forEach(v=>{const b=document.createElement('button');b.type='button';b.textContent=v+'%';
+    b.onclick=()=>{$('pcIn').value=v;Q.querySelectorAll('button').forEach(c=>c.classList.toggle('on',c===b))};Q.appendChild(b)});
+  $('pcIn').value=ini||50;
+  const fim=v=>{$('pcOv').hidden=true;$('pcOk').onclick=null;$('pcCan').onclick=null;res(v)};
+  $('pcOk').onclick=()=>{let v=parseInt($('pcIn').value,10);if(!(v>=1&&v<=99))v=50;fim(v)};
+  $('pcCan').onclick=()=>fim(null);
+  $('pcOv').hidden=false;setTimeout(()=>$('pcIn').select(),80)})}
 function avLista(){return RESTR.filter(r=>r.tp==='a')}
 function avAtuais(){const m=new Map();
   avLista().forEach(r=>{const k=r.ar+'|'+(r.esc==='peca'?('#'+r.el):(r.ln||'?'));
@@ -2095,22 +2133,23 @@ function avPieceTxt(a,i){const r=avDe(a,i);const esc=$('avEsc')&&$('avEsc').chec
     <span class="k">Apontar avanço no campo:</span>
     <div class="avb">
       <button type="button" data-nv="1" class="${atual===1?'on':''}" onclick="avSet(1)">Não iniciada</button>
-      <button type="button" data-nv="2" class="${atual===2?'on':''}" onclick="avSet(2)">Em andamento</button>
+      <button type="button" data-nv="2" class="${atual===2?'on':''}" onclick="avSet(2)">Em andamento${atual===2&&r&&r.pc?` ${r.pc}%`:''}</button>
       <button type="button" data-nv="3" class="${atual===3?'on':''}" onclick="avSet(3)">Concluída</button>
       ${r&&r.nv?`<button type="button" data-nv="0" onclick="avSet(0)">voltar a seguir a planilha</button>`:''}
     </div>
     <label class="ave"><input type="checkbox" id="avEsc" ${esc!==false?'checked':''}> aplicar na linha toda desta área</label>
-    ${r&&r.nv?`<div class="mt" style="font-size:10px;color:var(--mute);margin-top:4px">Hoje: <b>${NVN[r.nv]}</b> por ${r.quem} em ${new Date(r.em).toLocaleDateString('pt-BR')} · ${r.esc==='peca'?'só esta peça':'linha toda'}</div>`:''}
+    ${r&&r.nv?`<div class="mt" style="font-size:10px;color:var(--mute);margin-top:4px">Hoje: <b>${NVN[r.nv]}${r.nv===2&&r.pc?` · ${r.pc}% montado`:''}</b> por ${r.quem} em ${new Date(r.em).toLocaleDateString('pt-BR')} · ${r.esc==='peca'?'só esta peça':'linha toda'}</div>`:''}
   </div>`}
 async function avSet(nv){if(!PICK0)return;const [a,i]=PICK0;
   const esc=($('avEsc')&&$('avEsc').checked)?'linha':'peca';
   const ln=a.ln[i]?LN[a.ln[i]]:null;
   if(esc==='linha'&&!ln){alert('Esta peça não tem linha de tubulação; o apontamento vai valer só para ela.');}
-  let quem=rsQuem();
-  if(!quem){quem=(prompt('Seu nome (aparece em quem apontou):')||'').trim();if(quem)try{localStorage.setItem(RSKU,quem)}catch(e){}}
+  let pc=null;
+  if(nv===2){const ja=avDe(a,i);pc=await pedePct(ja&&ja.pc?ja.pc:50);if(pc==null)return}
+  const quem=await quemAgora();
   let n=0;RESTR.concat(RSFILA).forEach(r=>{const m=/^A-(\d+)$/.exec(r.id||'');if(m)n=Math.max(n,+m[1])});
-  const r={id:'A-'+String(n+1).padStart(3,'0'),tp:'a',nm:`${ln||('peça '+i)} · ${NVN[nv]}`,
-    esc:(ln?esc:'peca'),nv,ar:a.c,sis:a.g[a.grp[i]],ln:ln,dis:CN[CATS[a.cat[i]]],el:i,
+  const r={id:'A-'+String(n+1).padStart(3,'0'),tp:'a',nm:`${ln||('peça '+i)} · ${NVN[nv]}${pc?' '+pc+'%':''}`,
+    esc:(ln?esc:'peca'),nv,pc,ar:a.c,sis:a.g[a.grp[i]],ln:ln,dis:CN[CATS[a.cat[i]]],el:i,
     xyz:[+a.cx[i].toFixed(2),+a.cy[i].toFixed(2),+a.cz[i].toFixed(2)],
     st:'ab',quem:quem||'—',em:new Date().toISOString()};
   RESTR=RESTR.concat([r]);RSFILA=RSFILA.concat([r]);rsSaveLocal();
@@ -2123,7 +2162,7 @@ function drawAvan(){const at=avAtuais().filter(r=>r.nv);
   const SW=['','#e8c252','#4c8fe8','var(--ok)'];
   L.innerHTML=at.sort((u,v)=>(v.em||'').localeCompare(u.em||'')).map(r=>
     `<div class="ri" data-av="${r.id}"><div class="t"><span class="nm">${r.ln||('peça '+r.el)}</span>
-      <span class="pz" style="background:${SW[r.nv]};color:#06110e">${NVN[r.nv]}</span></div>
+      <span class="pz" style="background:${SW[r.nv]};color:#06110e">${NVN[r.nv]}${r.nv===2&&r.pc?' '+r.pc+'%':''}</span></div>
      <div class="mt"><span class="id">${r.id}</span> · área ${r.ar} · ${r.sis} · ${r.esc==='peca'?'só uma peça':'linha toda'}<br>
      por ${r.quem} em ${new Date(r.em).toLocaleDateString('pt-BR')}</div></div>`).join('');
   L.querySelectorAll('[data-av]').forEach(el=>el.onclick=()=>{const r=at.find(z=>z.id===el.dataset.av);if(r)rsFocus(r)})}
