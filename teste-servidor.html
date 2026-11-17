@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Teste do servidor de apontamentos</title>
+<style>
+ *{margin:0;padding:0;box-sizing:border-box}
+ body{background:#0d0f0e;color:#e8edea;font-family:'Segoe UI',system-ui,sans-serif;padding:26px 18px;line-height:1.5}
+ .w{max-width:760px;margin:0 auto}
+ h1{font-size:25px;font-weight:600;letter-spacing:-.01em;margin-bottom:5px}
+ .sub{color:#8e9693;font-size:14px;margin-bottom:26px}
+ .cx{border:1px solid #2b302e;border-radius:11px;padding:17px 19px;margin-bottom:14px;background:#111413}
+ .cx h2{font-size:15px;font-weight:600;margin-bottom:9px;color:#cfd6d2}
+ .st{display:flex;gap:11px;align-items:flex-start;margin-top:9px;font-size:14.5px}
+ .st i{flex:0 0 23px;height:23px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+       font-style:normal;font-weight:700;font-size:13px;margin-top:1px}
+ .ok i{background:#46b96a;color:#06130c}.bad i{background:#e0564a;color:#2a0806}
+ .wait i{background:#2b302e;color:#8e9693}.warn i{background:#f0a63c;color:#1a1003}
+ .st b{font-weight:500}
+ .det{font-size:12.5px;color:#8e9693;margin-top:3px;word-break:break-all;font-family:ui-monospace,Consolas,monospace}
+ .vd{margin-top:20px;border-radius:11px;padding:17px 19px;font-size:15px;display:none}
+ .vd.ok{background:#102a18;border:1px solid #2f6b40;color:#bfe8cb}
+ .vd.bad{background:#2d1110;border:1px solid #7a2a24;color:#f3c6c1}
+ .vd h3{font-size:16px;font-weight:600;margin-bottom:7px}
+ .vd p{margin-top:7px}
+ a{color:#6fc08a}
+ button{margin-top:18px;background:#1d6b3a;color:#fff;border:0;border-radius:8px;padding:10px 18px;
+        font-size:14.5px;font-weight:600;cursor:pointer;font-family:inherit}
+ code{background:#1a1e1c;padding:1px 6px;border-radius:4px;font-size:13px}
+</style>
+<div class="w">
+<h1>Teste do servidor de apontamentos</h1>
+<div class="sub">Painel 4D &middot; Projeto Alpha. Abra esta p&aacute;gina <b>no computador que n&atilde;o est&aacute; atualizando</b> as linhas.</div>
+
+<div class="cx">
+  <h2>1 &middot; O site do painel</h2>
+  <div class="st wait" id="l1"><i>&middot;</i><b>Verificando&hellip;</b></div>
+</div>
+
+<div class="cx">
+  <h2>2 &middot; O servidor dos apontamentos</h2>
+  <div class="st wait" id="l2"><i>&middot;</i><b>Verificando&hellip;</b></div>
+  <div class="st wait" id="l3"><i>&middot;</i><b>Aguardando&hellip;</b></div>
+</div>
+
+<div class="vd" id="vd"></div>
+<button onclick="location.reload()">Testar de novo</button>
+</div>
+
+<script>
+var API='https://restricoes.controle-de-tubulacao.workers.dev';
+function pos(id,cls,txt,det){
+  var e=document.getElementById(id);
+  e.className='st '+cls;
+  e.innerHTML='<i>'+(cls==='ok'?'&#10003;':cls==='bad'?'&#10005;':'!')+'</i><b>'+txt+'</b>'+(det?'<div class="det">'+det+'</div>':'');
+  var b=e.querySelector('b'); if(det){b.insertAdjacentHTML('afterend','');}
+}
+function veredito(cls,html){
+  var v=document.getElementById('vd'); v.className='vd '+cls; v.innerHTML=html; v.style.display='block';
+}
+
+pos('l1','ok','Este site abriu normalmente neste computador.', location.origin);
+
+var t0=Date.now();
+fetch(API+'/r',{cache:'no-store'})
+ .then(function(r){
+   if(!r.ok) throw new Error('o servidor respondeu com erro '+r.status);
+   return r.json();
+ })
+ .then(function(j){
+   var ms=Date.now()-t0;
+   var n=(j.items||[]).length;
+   var ap=(j.items||[]).filter(function(x){return x.tp==='a'&&x.nv}).length;
+   pos('l2','ok','Este computador alcan&ccedil;a o servidor.', API+'  ('+ms+' ms)');
+   pos('l3','ok','O servidor devolveu '+n+' registro(s), sendo '+ap+' apontamento(s) de avan&ccedil;o.','');
+   veredito('ok','<h3>A rede deste computador est&aacute; liberada.</h3>'+
+     '<p>Se mesmo assim a linha n&atilde;o muda de cor, o problema n&atilde;o &eacute; a rede e sim a c&oacute;pia do painel que est&aacute; aberta aqui. '+
+     'Feche a aba, abra <a href="https://controle-tubulacao.github.io">controle-tubulacao.github.io</a> e d&ecirc; <code>Ctrl + F5</code>.</p>'+
+     '<p>Confira no topo do painel: tem que aparecer <b>792 t</b> montadas e uma aba chamada <b>Campo</b>. Se n&atilde;o aparecer, &eacute; uma vers&atilde;o velha guardada no navegador.</p>');
+ })
+ .catch(function(e){
+   pos('l2','bad','Este computador <u>n&atilde;o</u> alcan&ccedil;a o servidor.', API+'  &rarr;  '+e.message);
+   pos('l3','warn','Por isso os avan&ccedil;os lan&ccedil;ados por outras pessoas n&atilde;o chegam aqui.','');
+   veredito('bad','<h3>A rede desta m&aacute;quina est&aacute; bloqueando o servidor.</h3>'+
+     '<p>O painel abre e funciona, mas fica preso no que j&aacute; estava gravado neste computador. '+
+     '&Eacute; o mesmo bloqueio de <code>workers.dev</code> que deu o erro de certificado no come&ccedil;o.</p>'+
+     '<p><b>O que fazer:</b> mostre esta p&aacute;gina para a TI e pe&ccedil;a a libera&ccedil;&atilde;o de <code>restricoes.controle-de-tubulacao.workers.dev</code>. '+
+     'Enquanto isso, este computador s&oacute; v&ecirc; o avan&ccedil;o se algu&eacute;m lan&ccedil;ar nele mesmo, ou por 4G.</p>');
+ });
+</script>
+</html>
