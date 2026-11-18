@@ -4451,14 +4451,16 @@ function openPlant(plant, sectionId){
   var back = document.getElementById('backToCover-'+plant);
   if (back) { back.textContent = '← ' + (co ? COMPANY[co].name : 'Capa'); back.setAttribute('data-cover', co ? 'cover-'+co : 'cover'); }
   var shownId = showViewIn(container, '#tabnav-'+plant, sectionId || defaultId, defaultId);
-  if (history.replaceState) history.replaceState(null, '', '#'+plant+':'+shownId);
+  // try/catch: dentro de uma pre-visualizacao em quadro isolado (claude.ai, SharePoint,
+  // Teams) o navegador bloqueia escrever no endereco e derrubava a tela com SecurityError
+  try { if (history.replaceState) history.replaceState(null, '', '#'+plant+':'+shownId); } catch (e) {}
 }
 
 function showCover(id){
   if (!id || !document.getElementById(id)) id = 'cover';
   document.querySelectorAll('.cover-screen').forEach(function(cv){ cv.style.display = (cv.id === id) ? '' : 'none'; });
   document.querySelectorAll('.plant-shell').forEach(function(p){ p.classList.remove('active'); });
-  if (history.replaceState) history.replaceState(null, '', '#'+id);
+  try { if (history.replaceState) history.replaceState(null, '', '#'+id); } catch (e) {}
   window.scrollTo(0, 0);
   // quem navega pelo teclado continua com o foco na tela nova (com o mouse, nada muda)
   var first = document.querySelector('#'+id+' .co-btn, #'+id+' .cover-btn');
