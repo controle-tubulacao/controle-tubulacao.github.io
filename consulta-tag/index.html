@@ -80,6 +80,12 @@ ul.rast{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;fo
 .obs{background:var(--warnbg);color:var(--fg);border-radius:6px;padding:10px 12px;font-size:13.5px}
 .empty{color:var(--mute);padding:14px 2px}
 .note{font-size:12px;color:var(--mute)}
+.qbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.qbtns .vbtn{font-size:13px;padding:7px 14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{all:unset;cursor:pointer;border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:13px}
+.chip:hover,.chip:focus-visible{border-color:var(--accent)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
 @media (max-width:520px){dl{grid-template-columns:1fr;gap:2px}dd{margin-bottom:8px}.tag{font-size:22px}}
 </style></head><body>
 <div class="band"><div class="in">
@@ -90,6 +96,7 @@ ul.rast{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;fo
     <label for="q">Digite o TAG ou o item code</label>
     <input id="q" autocomplete="off" spellcheck="false" placeholder="ex.: TV-06001, P-413, VM.300.02.10">
     <div class="hint">Vale a regra do número principal: PSV-00002A-83 também acha PSV-00002.</div>
+    <div class="qbtns"><button type="button" class="vbtn" id="bSem">Válvulas, instrumentos e bombas sem data de chegada</button><button type="button" class="vbtn" id="bMapa">Fora do Mapa de Entrega</button></div>
   </div>
 </div></div>
 <div class="wrap">
@@ -1258,6 +1265,7 @@ function card(x){
   </div>`;
 }
 function run(){
+  endMulti();
   const raw=$("#q").value.trim(),q=nz(raw),out=$("#out");
   try{history.replaceState(null,"",raw?"#"+encodeURIComponent(raw.toUpperCase()):location.pathname)}catch(e){}
   if(!q){out.innerHTML='<div class="empty">Digite um TAG ou um item code para ver o status.</div>';return}
@@ -1359,7 +1367,7 @@ async function loadArea(a){
       for(let v=0;v<nv;v++){const e=elU[v]*3,x=pos[v*3]*sx+ox,y=pos[v*3+1]*sy+oy,z=pos[v*3+2]*sz+oz;if(x<mn[e])mn[e]=x;if(x>mx[e])mx[e]=x;if(y<mn[e+1])mn[e+1]=y;if(y>mx[e+1])mx[e+1]=y;if(z<mn[e+2])mn[e+2]=z;if(z>mx[e+2])mx[e+2]=z}
     }
     a.mn=mn;a.mx=mx;a.loaded=true;nLoaded++;$("#vprog").textContent=nLoaded<A.length?`· carregando ${nLoaded} de ${A.length} áreas`:`· ${A.length} áreas carregadas`;
-    if(cur)applyHL();
+    if(cur||MULTI)applyHL();
     return a;
   })();
 }
@@ -1372,7 +1380,7 @@ async function loadArea(a){
   IDX.lines.forEach((l,i)=>{const k=lineKey(l);if(k)(LI[k]=LI[k]||[]).push(i)});
   vload("");
   const first=want?resolveAreas(want):[];const order=[...new Set([...first,...A.map(a=>a.c)])];
-  if(want)focusTag(want);else fitBox(allBB(),1.0);
+  if(MULTI)startList(MULTI.key,MULTI.cat);else if(want)focusTag(want);else fitBox(allBB(),1.0);
   loadSG();
   let i=0;const worker=async()=>{while(i<order.length){const a=AC[order[i++]];try{await loadArea(a)}catch(e){console.warn("área",a.c,e)}}};
   await Promise.all([worker(),worker()]);
@@ -1396,7 +1404,7 @@ async function loadSG(){
       const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.BufferAttribute(pos,3));g.setAttribute("elem",new THREE.BufferAttribute(el,1));g.setIndex(new THREE.BufferAttribute(ix,1));
       const m=new THREE.Mesh(g,a.mat);m.position.set(ox,oy,oz);g.computeBoundingSphere();m.userData.a=a;m.renderOrder=2;SC.add(m);a.meshes.push(m);
     }
-    SGA=a;A.push(a);selKey=null;if(cur)applyHL();
+    SGA=a;A.push(a);selKey=null;if(cur||MULTI)applyHL();
   }catch(e){console.warn("pecas pequenas",e)}
 }
 function sgEls(use,out){
@@ -1462,6 +1470,7 @@ function fitBox(b,pad){
 }
 let selKey=null;
 function applyHL(){
+  if(MULTI){applyMulti();return}
   if(!cur)return;const x=cur,t=targets(x),col=x.vq?STC["s-vio"]:STC[status(x.r)[1]];
   A.forEach(a=>{if(a.loaded){a.ct.set(a.col0);}});
   for(const [a,i] of t.els){a.ct[i*4]=col[0];a.ct[i*4+1]=col[1];a.ct[i*4+2]=col[2];a.ct[i*4+3]=1}
@@ -1489,14 +1498,92 @@ function applyHL(){
   vmsg(msg);setLine(ln,t.how==="area");
 }
 async function focusTag(x){
-  cur=x;selKey=null;
+  endMulti();cur=x;selKey=null;
   if(!IDX){want=x;return}
   const need=resolveAreas(x);
   applyHL();
   for(const c of need){if(!AC[c].loaded){try{await loadArea(AC[c])}catch(e){vmsg("Não consegui abrir a área "+c+" da maquete.");continue}if(cur!==x)return;selKey=null;applyHL()}}
 }
+/* ===== listas: válvulas, instrumentos e bombas sem data de chegada / fora do Mapa de Entrega ===== */
+const GRP={"Válvula":"Válvulas","Instrumento":"Instrumentos","Bomba":"Bombas"};
+const LISTS={
+  sem:{btn:"#bSem",t:"sem data de chegada",f:x=>!x.r[12]&&GRP[x.r[2]]&&status(x.r)[0]==="Sem data de entrega"},
+  mapa:{btn:"#bMapa",t:"fora do Mapa de Entrega",f:x=>!x.r[12]&&GRP[x.r[2]]&&!x.r[8]&&!x.r[9]&&!IGN.test(x.r[4]||"")}
+};
+let MULTI=null;
+const mkI=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshBasicMaterial({transparent:true,opacity:.8}),4000);mkI.count=0;mkI.visible=false;mkI.renderOrder=3;SC.add(mkI);
+const ptsM=new THREE.Points(new THREE.BufferGeometry(),new THREE.PointsMaterial({size:7,sizeAttenuation:false,vertexColors:true,depthTest:false,transparent:true,opacity:.95}));ptsM.renderOrder=1000;ptsM.visible=false;SC.add(ptsM);
+function endMulti(){if(!MULTI)return;MULTI=null;mkI.visible=false;ptsM.visible=false;UHL.value=0;A.forEach(a=>{if(a.loaded){a.ct.set(a.col0);a.colT.needsUpdate=true}});Object.values(LISTS).forEach(L=>$(L.btn).classList.remove("on"));vmsg("")}
+function startList(key,cat){
+  const all=R.filter(LISTS[key].f),list=cat?all.filter(x=>x.r[2]===cat):all;
+  cur=null;selKey=null;box.visible=false;mk.visible=false;
+  const bb=[1e9,1e9,1e9,-1e9,-1e9,-1e9];
+  list.forEach(x=>{x._bb=null;const tb=TB[x.b]||[],pref=tb.filter(t=>nz(t[7]).startsWith(x.k));x._use=pref.length?pref:tb;x._col=STC[status(x.r)[1]];
+    x._pos=x._use.length?"peça":GI[x.b]?"equip":"";
+    x._use.forEach(t=>{for(let k=0;k<3;k++){bb[k]=Math.min(bb[k],t[k+1]);bb[k+3]=Math.max(bb[k+3],t[k+4])}})});
+  MULTI={key,cat,all,list,done:{},els:[],hit:new Set(),sgHit:new Set(),sg:SGA?1:0};
+  Object.entries(LISTS).forEach(([k,L])=>$(L.btn).classList.toggle("on",k===key));
+  $("#q").value="";try{history.replaceState(null,"",location.pathname)}catch(e){}
+  renderList();
+  if(IDX){applyHL();fitBox(bb[0]<1e8&&bb[3]-bb[0]<600?bb:allBB(),0.55)}
+}
+function renderList(){
+  const M=MULTI,L=LISTS[M.key],cnt=c=>M.all.filter(x=>x.r[2]===c).length;
+  const chips=[["","Todos",M.all.length],...Object.keys(GRP).map(c=>[c,GRP[c],cnt(c)])];
+  const npos=M.list.filter(x=>x._pos).length,ord=[...M.list].sort((a,b)=>Object.keys(GRP).indexOf(a.r[2])-Object.keys(GRP).indexOf(b.r[2])||a.r[0].localeCompare(b.r[0]));
+  $("#out").innerHTML=`<div class="card"><div class="top"><span class="tag" style="font-size:20px">${M.list.length} ${M.cat?GRP[M.cat].toLowerCase():"válvulas, instrumentos e bombas"} ${L.t}</span></div>
+   <div class="chips">${chips.map(([c,l,n])=>`<button class="chip${(M.cat||"")===c?" on":""}" data-c="${c}">${l} <b>${n}</b></button>`).join("")}</div>
+   <p class="hint" style="margin:0">${npos} com posição na maquete (destacados em cor, o resto fica cinza) · ${M.list.length-npos} sem posição exata na maquete. Fornecedores ignorados (GEA, HPB, Intecnial, Kepler Weber) ficam fora. Clique num TAG para abrir a ficha.</p></div>
+   <div class="list">`+ord.map((x,i)=>{const [st,cls]=status(x.r);return `<button data-i="${i}"><span><span class="t">${esc(x.r[0])}</span> <span class="d">${esc(x.r[2])} · ${esc(x.r[4]||"sem fornecedor")} · ${esc(x.r[3]||"")}${x._pos?"":" · sem posição na maquete"}</span></span><span class="pill ${cls}" style="font-size:12px;padding:3px 9px">${esc(st)}</span></button>`}).join("")+"</div>";
+  $("#out").querySelectorAll(".chip").forEach(b=>b.onclick=()=>startList(M.key,b.dataset.c));
+  $("#out").querySelectorAll(".list button").forEach(b=>b.onclick=()=>{const x=ord[+b.dataset.i];$("#q").value=x.r[0];run()});
+}
+function multiArea(a,M){
+  const isSG=a===SGA,C=4,cell=new Map(),gm=new Map();
+  for(const x of M.list){
+    if(x._pos==="equip"){if(!isSG)(GI[x.b]||[]).forEach(([c,gi])=>{if(c===a.c)gm.set(gi,x)});continue}
+    if(x._pos!=="peça"||(!isSG&&M.sgHit.has(x)))continue;
+    for(const t of x._use){if(!isSG&&areaOfBox(t)!==a)continue;const p=isSG?.05:.3,sz=Math.max(t[4]-t[1],t[5]-t[2],t[6]-t[3]);
+      for(let i=Math.floor((t[1]-p)/C);i<=Math.floor((t[4]+p)/C);i++)for(let j=Math.floor((t[2]-p)/C);j<=Math.floor((t[5]+p)/C);j++){const k=i*100003+j;if(!cell.has(k))cell.set(k,[]);cell.get(k).push([t,x,sz])}}
+  }
+  if(!cell.size&&!gm.size)return;
+  for(let i=0;i<a.n;i++){const e=i*3;if(a.mn[e]>a.mx[e])continue;
+    if(gm.size&&gm.has(a.grp[i])){const x=gm.get(a.grp[i]);M.els.push([a,i,x._col]);M.hit.add(x);const b=x._bb||(x._bb=[1e9,1e9,1e9,-1e9,-1e9,-1e9]);for(let k=0;k<3;k++){b[k]=Math.min(b[k],a.mn[e+k]);b[k+3]=Math.max(b[k+3],a.mx[e+k])}continue}
+    if(!cell.size)continue;
+    const cx=(a.mn[e]+a.mx[e])/2,cy=(a.mn[e+1]+a.mx[e+1])/2,cz=(a.mn[e+2]+a.mx[e+2])/2,s=Math.max(a.mx[e]-a.mn[e],a.mx[e+1]-a.mn[e+1],a.mx[e+2]-a.mn[e+2]);
+    const cand=cell.get(Math.floor(cx/C)*100003+Math.floor(cy/C));if(!cand)continue;
+    for(const [t,x,sz] of cand){let ok;
+      if(isSG)ok=Math.abs(cx-(t[1]+t[4])/2)<.04&&Math.abs(cy-(t[2]+t[5])/2)<.04&&Math.abs(cz-(t[3]+t[6])/2)<.04&&Math.abs(s-sz)<.08;
+      else{const p=.3;ok=cx>=t[1]-p&&cx<=t[4]+p&&cy>=t[2]-p&&cy<=t[5]+p&&cz>=t[3]-p&&cz<=t[6]+p&&s<=Math.max(sz*1.5,1.0)}
+      if(ok){M.els.push([a,i,x._col]);M.hit.add(x);if(isSG)M.sgHit.add(x);break}}
+  }
+}
+function applyMulti(){
+  const M=MULTI;
+  if(SGA&&!M.sg){M.sg=1;M.done={};M.els=[];M.hit=new Set();M.sgHit=new Set();M.list.forEach(x=>x._bb=null)}
+  for(const a of (SGA?[SGA,...A.filter(z=>z!==SGA)]:A)){if(!a.loaded||M.done[a.c])continue;M.done[a.c]=1;multiArea(a,M)}
+  A.forEach(a=>{if(a.loaded)a.ct.set(a.col0)});
+  for(const [a,i,c] of M.els){a.ct[i*4]=c[0];a.ct[i*4+1]=c[1];a.ct[i*4+2]=c[2];a.ct[i*4+3]=1}
+  A.forEach(a=>{if(a.loaded)a.colT.needsUpdate=true});
+  UHL.value=1;
+  // posição exata conhecida mas geometria ainda não carregada (ou não exportada): marcador colorido
+  let n=0;const m4=new THREE.Matrix4(),cl=new THREE.Color();
+  for(const x of M.list){if(x._pos!=="peça"||M.hit.has(x))continue;
+    for(const t of x._use){if(n>=4000)break;m4.makeScale(Math.max(t[4]-t[1],.15)+.15,Math.max(t[5]-t[2],.15)+.15,Math.max(t[6]-t[3],.15)+.15).setPosition((t[1]+t[4])/2,(t[2]+t[5])/2,(t[3]+t[6])/2);
+      mkI.setMatrixAt(n,m4);cl.setRGB(x._col[0]/255,x._col[1]/255,x._col[2]/255);mkI.setColorAt(n,cl);n++}}
+  mkI.count=n;mkI.instanceMatrix.needsUpdate=true;if(mkI.instanceColor)mkI.instanceColor.needsUpdate=true;mkI.visible=n>0;
+  // um ponto colorido por TAG, visível mesmo com a planta inteira na tela
+  const pp=[],pc=[];
+  for(const x of M.list){const c=x._col;
+    if(x._pos==="peça")x._use.forEach(t=>{pp.push((t[1]+t[4])/2,(t[2]+t[5])/2,(t[3]+t[6])/2);pc.push(c[0]/255,c[1]/255,c[2]/255)});
+    else if(x._pos==="equip"&&x._bb){const b=x._bb;pp.push((b[0]+b[3])/2,(b[1]+b[4])/2,b[5]);pc.push(c[0]/255,c[1]/255,c[2]/255)}}
+  const pg=ptsM.geometry;pg.setAttribute("position",new THREE.Float32BufferAttribute(pp,3));pg.setAttribute("color",new THREE.Float32BufferAttribute(pc,3));pg.computeBoundingSphere();ptsM.visible=pp.length>0;
+  const npos=M.list.filter(x=>x._pos).length;
+  vmsg(`${M.list.length} ${M.cat?GRP[M.cat].toLowerCase():"válvulas, instrumentos e bombas"} ${LISTS[M.key].t} · ${npos} destacados na maquete · ${M.list.length-npos} sem posição exata (ver lista)`);setLine("",false);
+}
+Object.entries(LISTS).forEach(([k,L])=>$(L.btn).onclick=()=>{if(MULTI&&MULTI.key===k){endMulti();run();return}startList(k,"")});
 $("#vall").onclick=()=>fitBox(allBB(),0.55);
-$("#vclr").onclick=()=>{cur=null;selKey=null;UHL.value=0;box.visible=false;mk.visible=false;A.forEach(a=>{if(a.loaded){a.ct.set(a.col0);a.colT.needsUpdate=true}});vmsg("")};
+$("#vclr").onclick=()=>{endMulti();cur=null;selKey=null;UHL.value=0;box.visible=false;mk.visible=false;A.forEach(a=>{if(a.loaded){a.ct.set(a.col0);a.colT.needsUpdate=true}});vmsg("")};
 // clique numa peça -> ficha
 let down=null;cv.addEventListener("pointerdown",e=>down=[e.clientX,e.clientY]);
 cv.addEventListener("pointerup",e=>{
