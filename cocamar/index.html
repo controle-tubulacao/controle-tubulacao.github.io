@@ -186,6 +186,17 @@ dd{margin:0;font:700 21px var(--hd);font-variant-numeric:tabular-nums}
 .avit select{font:inherit;font-size:13.5px;padding:5px 4px;border:1px solid var(--rule,#d5dce3);background:var(--surface,#fff);color:inherit;border-radius:0;width:100%}.avip{font-weight:700;text-align:right;font-size:13px}
 @media(max-width:520px){.avit{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 38px}}
 
+/* barra fixa: avanco, salvar e PDF ao alcance em qualquer ponto da pagina */
+#fabs{position:fixed;right:14px;bottom:14px;z-index:60;display:flex;gap:8px;align-items:center}
+body{padding-bottom:72px}
+#fabs button{font:700 14px inherit;font-family:inherit;border:1px solid #13263b;background:#13263b;color:#fff;padding:11px 15px;cursor:pointer;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.22)}
+#fabs button.sec{background:var(--surface,#fff);color:var(--fg,#13263b);border-color:var(--rule,#9aa8b6)}
+#fabs button:hover{filter:brightness(1.1)}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:70;background:#13263b;color:#fff;padding:11px 16px;font:600 14px inherit;font-family:inherit;max-width:88vw;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+#toast[hidden]{display:none}
+@media(max-width:520px){#fabs{right:8px;left:8px;bottom:8px;gap:6px;justify-content:flex-end}#fabs button{padding:10px 10px;font-size:13px;flex:1 1 0;min-width:0}}
+@media print{#fabs,#toast{display:none!important}}
+
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 </style>
 <div class="top"><div class="wrap"><img src="marcas/MSE.png" alt="MSE"><div class="mid">Plano de comissionamento das utilidades, revisão R10</div><img src="marcas/Cocamar.png" alt="Cocamar"></div></div>
@@ -455,7 +466,7 @@ function panel(sy){
 function board(){
  var ids=sysIds(),o=overall();
  var h='<div class="avbox"><div class="avhead"><h3>Avanço da obra · '+o+'% realizado</h3><button type="button" data-av="close" class="avbtn">Fechar</button></div>'+bar(o);
- h+='<div class="avact"><button type="button" class="avbtn pri" data-av="rep">Gerar relatório</button><button type="button" class="avbtn" data-av="csv">Exportar CSV (Excel)</button><button type="button" class="avbtn" data-av="bak">Salvar backup</button><label class="avbtn">Carregar backup<input type="file" accept=".json,application/json" data-av="load" hidden></label></div>';
+ h+='<div class="avact"><button type="button" class="avbtn pri" data-av="pdf">Exportar PDF (impressão)</button><button type="button" class="avbtn" data-av="rep">Gerar relatório</button><button type="button" class="avbtn" data-av="csv">Exportar CSV (Excel)</button><button type="button" class="avbtn" data-av="bak">Salvar backup</button><label class="avbtn">Carregar backup<input type="file" accept=".json,application/json" data-av="load" hidden></label></div>';
  h+='<div class="avtw"><table><thead><tr><th>Sistema</th><th>Marco</th><th>Realizado</th><th>Previsto</th><th>Situação</th>';
  TIPOS.forEach(function(t){h+='<th>'+TCURTO[t]+'</th>'});h+='</tr></thead><tbody>';
  ids.forEach(function(sy){var s=S()[sy],a=sysPct(sy),e=sysExp(sy),st=status(a,e);
@@ -465,12 +476,16 @@ function board(){
 function openBoard(){var el=document.getElementById('avlay');if(!el){el=document.createElement('div');el.id='avlay';document.body.appendChild(el)}el.innerHTML=board();el.hidden=false;document.body.style.overflow='hidden'}
 function closeBoard(){var el=document.getElementById('avlay');if(el)el.hidden=true;document.body.style.overflow=''}
 
+function toast(m){var el=document.getElementById('toast');if(!el){el=document.createElement('div');el.id='toast';document.body.appendChild(el)}
+ el.textContent=m;el.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(function(){el.hidden=true},3600)}
+function salvar(){save();dl('Backup_Avanco_Cocamar_'+stamp()+'.json','application/json',JSON.stringify(D));
+ toast('Avanço salvo neste aparelho e baixado como arquivo de backup.')}
 function csv(){var L=[['Sistema','Nome do sistema','Subsistema','Marco','Tipo','TAG / item','Descrição','Qtd','Etapa atual','Avanço %','Atualizado em']];
  sysIds().forEach(function(sy){var s=S()[sy];sysSubs(sy).forEach(function(sd){var sb=sd[0],m=subMarco(sy,sd),x=D.sys[sy]&&D.sys[sy][sb]||{};TIPOS.forEach(function(t){listOf(sy,sb,t).forEach(function(it){L.push([sy,s.nome,sb,m?br(m):'',t,it.tag,it.desc,it.q,stageName(sy,it),pctItem(sy,it),x.d?br(x.d):''])})})})});
  return '﻿'+L.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"'}).join(';')}).join('\r\n')}
 function dl(name,mime,text){var b=new Blob([text],{type:mime}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(u);a.remove()},500)}
 
-function report(){
+function report(auto){
  var ids=sysIds(),o=overall(),t=new Date().toLocaleString('pt-BR'),late=[];
  var h='<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório de avanço · Cocamar utilidades</title><style>body{font:14px/1.45 Arial,sans-serif;margin:0;color:#13263b}.w{max-width:1000px;margin:0 auto;padding:24px}h1{margin:0 0 4px;font-size:24px}h2{font-size:17px;margin:22px 0 6px;border-bottom:2px solid #13263b;padding-bottom:3px}table{border-collapse:collapse;width:100%;font-size:12.5px;margin:6px 0}th,td{border:1px solid #cfd8e0;padding:4px 6px;text-align:left;vertical-align:top}th{background:#eef2f5}.b{display:block;background:#e3e8ed;height:9px;border-radius:5px;overflow:hidden}.b i{display:block;height:100%;background:#1f8a4c}.ro{color:#b3261e;font-weight:700}.at{color:#b36a00;font-weight:700}.ok{color:#1f8a4c;font-weight:700}.s0{color:#56687a}.sub{margin:14px 0 2px;font-weight:700;font-size:15px}.tp{margin:8px 0 2px;font-weight:700;color:#d81b60}.pb{margin:0 0 14px}@media print{.pb{display:none}.w{padding:0}.sub{break-after:avoid}}</style></head><body><div class="w"><div class="pb"><button onclick="window.print()">Imprimir / salvar em PDF</button></div>';
  h+='<h1>Relatório de avanço da montagem</h1><div>Comissionamento das utilidades Cocamar (Maringá/PR) · emitido em '+esc(t)+'</div>';
@@ -483,15 +498,17 @@ function report(){
   sysSubs(sy).forEach(function(sd){var sb=sd[0],x=D.sys[sy]&&D.sys[sy][sb]||{};h+='<div><b>'+esc(sb)+'</b> · '+subPct(sy,sb)+'%'+(subMarco(sy,sd)?' · marco '+br(subMarco(sy,sd)):'')+(x.o?'<br><i>Obs.: '+esc(x.o)+'</i>':'')+'</div>';
    TIPOS.forEach(function(tp){var l=listOf(sy,sb,tp);if(!l.length)return;h+='<div class="tp">'+TLAB[tp]+' ('+subPct(sy,sb,tp)+'%)</div><table><thead><tr><th style="width:22%">TAG</th><th>Descrição</th><th style="width:7%">Qtd</th><th style="width:20%">Etapa atual</th><th style="width:8%">%</th></tr></thead><tbody>'+l.map(function(it){return'<tr><td>'+esc(it.tag)+'</td><td>'+esc(it.desc)+'</td><td>'+it.q+'</td><td>'+esc(stageName(sy,it))+'</td><td>'+pctItem(sy,it)+'%</td></tr>'}).join('')+'</tbody></table>'})})});
  h+='<p style="color:#56687a;font-size:12px">Previsto = proporção do tempo decorrido nas fases do plano, com janela de 60 dias antes do marco do cronograma Desmet/COCA6 (datas intermediárias indicativas). O avanço de cada item foi informado pelos usuários do painel; as etapas por tipo de item são referência e podem ser ajustadas.</p></div></body></html>';
- var b=new Blob([h],{type:'text/html'}),u=URL.createObjectURL(b);var w=window.open(u,'_blank');if(!w)dl('Relatorio_Avanco_'+stamp()+'.html','text/html',h)}
+ if(auto)h+='<script>window.addEventListener("load",function(){setTimeout(function(){window.print()},500)})<\/script>';
+ var b=new Blob([h],{type:'text/html'}),u=URL.createObjectURL(b);var w=window.open(u,'_blank');
+ if(!w){dl('Relatorio_Avanco_'+stamp()+'.html','text/html',h);toast('O navegador bloqueou a nova aba. O relatório foi baixado: abra o arquivo e use Imprimir.')}}
 
 document.addEventListener('change',function(e){var t=e.target;if(!t.dataset||!t.dataset.av)return;
  if(t.dataset.av==='i'){setRaw(t.dataset.sy,t.dataset.sb,t.dataset.k,+t.value);refresh(t.dataset.sy,true)}
  else if(t.dataset.av==='load'&&t.files&&t.files[0]){var r=new FileReader();r.onload=function(){try{var j=JSON.parse(r.result);if(j&&j.sys){D=j;save();openBoard();if(window.__cur)refresh(window.__cur)}else alert('Arquivo de backup inválido.')}catch(x){alert('Arquivo de backup inválido.')}};r.readAsText(t.files[0])}});
 document.addEventListener('input',function(e){var t=e.target;if(t.dataset&&t.dataset.av==='o'){var sy=t.dataset.sy,sb=t.dataset.sb;D.sys[sy]=D.sys[sy]||{};D.sys[sy][sb]=D.sys[sy][sb]||{i:{},o:'',d:''};D.sys[sy][sb].o=t.value;D.sys[sy][sb].d=today();save()}});
 document.addEventListener('click',function(e){var t=e.target.closest('[data-av]');if(!t)return;var k=t.dataset.av;
- if(k==='open')openBoard();else if(k==='close')closeBoard();else if(k==='rep')report();else if(k==='csv')dl('Avanco_Cocamar_'+stamp()+'.csv','text/csv',csv());
- else if(k==='bak')dl('Backup_Avanco_Cocamar_'+stamp()+'.json','application/json',JSON.stringify(D));
+ if(k==='open')openBoard();else if(k==='close')closeBoard();else if(k==='rep')report();else if(k==='pdf')report(true);else if(k==='sav')salvar();else if(k==='csv')dl('Avanco_Cocamar_'+stamp()+'.csv','text/csv',csv());
+ else if(k==='bak')salvar();
  else if(k==='tipo'){var sy=t.dataset.sy,sb=t.dataset.sb,tp=t.dataset.tp;listOf(sy,sb,tp).forEach(function(it){var mx=it.cnt?it.q:ST[it.tp].length-1;setRaw(sy,sb,it.key,t.dataset.v==='max'?mx:0)});refresh(sy,true)}});
 document.addEventListener('click',function(e){if(e.target.closest('#avlay [data-open]'))closeBoard()},true);
 function refresh(sy,keep){var el=document.getElementById('pav');if(el&&!el.hidden){var op={};el.querySelectorAll('details').forEach(function(d,i){op[i]=d.open});var sc=el.scrollTop,pS=el.closest('.box'),ys=pS?pS.scrollTop:0;el.innerHTML=panel(sy);el.querySelectorAll('details').forEach(function(d,i){if(op[i]!=null)d.open=op[i]});el.scrollTop=sc;var m=document.getElementById('modal');if(m&&keep){m.scrollTop=m.scrollTop}}sum()}
@@ -541,3 +558,9 @@ window.load3d=sy=>{run=true;loop();msg.hidden=false;msg.textContent='Carregando 
 window.stop3d=()=>{run=false};
 if(window.want3d)window.load3d(window.want3d);
 </script>
+<div id="fabs">
+<button type="button" data-av="open">Avanço</button>
+<button type="button" class="sec" data-av="sav">Salvar</button>
+<button type="button" class="sec" data-av="pdf">PDF</button>
+</div>
+<div id="toast" hidden></div>
