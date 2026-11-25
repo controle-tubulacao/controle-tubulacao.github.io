@@ -1610,38 +1610,44 @@ function drawUFlow(boxId,wrapId,legId,VA){const box=$('#'+boxId);if(!box)return;
  lab('MPC',['4" MPC00007 · 4" MPC00008 → 3" MPC00012','1 1/2" MPC00011 → atemperação DS-00002/00003'],1728,100,'start',10);
  // saída de vapor da caldeira e distribuição por destino (P&ID 00-PR-PID-00002 e 00-PR-PID-00003)
  E('MPS',[Rt('CAL',-70),[2500,180]],{na:1,t:['14" HPS00001 · 1/2" HPS00002','24" MPS00001 → PV-00016','20" MPS00001 → 16" MPS00002','8" MPS00005 → desaerador'],at:[2236,122],fs:10});
- E('MPS',[[2500,80],[2500,260],[2620,260],[2620,560]],{na:1});dot('MPS',2500,180);
- lab('MPS',['12" MPS00003','10" MPS00013'],2506,236,'start',10);
- const SD=[['ATM','Atmosfera · silenciador','alívio PSV-00005 (16 barg)','30" LPS00010','10" MPS00007',80,2500,'LPS'],
-  ['KAT1','Katzen · E-539A–C · E-580A/B · E-701 · D-560/E-562 · T-507','PV-00004 (3 barg) · alívio 18" LPS00017 · 16" LPS00014','20" HPS-17101 · 8" LPS00013 · 10" LPS00015','10" MPS00008',140,2500,'LPS'],
-  ['DDGS','Área da secagem de DDGS (Grand)','redutoras PV-00001 / PV-00002','14" HPS-17121 (4 ligações)','12" MPS00004',200,2500,'LPS'],
-  ['COZ','Cozimento E-343/E-446 · químicos ED-420/ED-679','PV-00005 (3 barg) · alívio 6" LPS00019 · 8" LPS00021','12" LPS00018 · 3" HPS-17203 · 3" HPS-17201','6" MPS00010',260,2620,'LPS'],
-  ['MASH','Mash milling ED-324 · ED-299A/B','PV-00006/07 (8 barg) · alívio 4" LPS00023 · 6" LPS00024 · 10" LPS00028','8" LPS00022 → 10" HPS-17130','6" MPS00011',320,2620,'LPS'],
-  ['E271','Mash milling E-271','Katzen · 13 barg (sem redutora)','8" HPS-17111','8" MPS00026',380,2620,'MPS'],
-  ['VET','Secador de glúten (Vettertec)','PV-00009 (7 barg) · alívio 4" LPS00032 · 6" LPS00033','8" LPS00031','6" MPS00025',440,2620,'LPS'],
-  ['GEA','Extração de glúten (GEA)','PV-00008 (3 barg) · alívio 4" LPS00029 · 8" LPS00030','6" LPS00026','4" MPS00014',500,2620,'LPS'],
-  ['SGR','Secador de grãos','10 barg · 06-PR-PID-00001','','8" MPS00015',560,2620,'MPS']];
- SD.forEach(([id,l,sb,ex,ln,y,bx])=>{N(id,'term',2900,y,l,sb,{wh:[390,56],ex:ex?[ex]:[]});E('MPS',[[bx,y],Lf(id)],{t:ln,at:[bx+6,y-6],fs:10});dot('MPS',bx,y)});
+ const RY=i=>76+i*52;
+ E('MPS',[[2500,RY(0)],[2500,RY(6)],[2620,RY(6)],[2620,RY(11)]],{na:1});dot('MPS',2500,180);
+ E('MPS',[[2500,RY(1)],[2620,RY(1)],[2620,RY(4)]],{na:1});dot('MPS',2500,RY(1));
+ lab('MPS',['10" MPS00008 → PV-00004','10" LPS00015 → 20" HPS-17101'],2506,RY(1)+15,'start',10);
+ lab('MPS',['12" MPS00003','10" MPS00013'],2506,RY(6)-19,'start',10);
+ const SD=[['ATM','Atmosfera · silenciador','alívio da PSV-00005 (16 barg)','30" LPS00010','10" MPS00007',0,2500],
+  ['DS1','Destilaria (Katzen) · E-539A–C / E-580A/B','3 barg · 1189-01-17-103','alívio PV-00004: 18" LPS00017 · 8" LPS00013 · 16" LPS00014','16" HPS-17102',1,2620],
+  ['DS2','Destilaria (Katzen) · D-560 / E-562','3 barg · 1189-01-17-104','','12" HPS-17104',2,2620],
+  ['DS3','Destilaria (Katzen) · T-507','3 barg · 1189-01-17-104','','10" HPS-17105',3,2620],
+  ['DS4','Destilaria (Katzen) · E-701','3 barg · 1189-01-17-104','','6" HPS-17103',4,2620],
+  ['DDGS','Área da secagem de DDGS (Grand)','redutoras PV-00001 / PV-00002','14" HPS-17121 (4 ligações)','12" MPS00004',5,2500],
+  ['COZ','Cozimento E-343/E-446 · químicos ED-420/ED-679','PV-00005 (3 barg) · alívio 6" LPS00019 · 8" LPS00021','12" LPS00018 · 3" HPS-17203 · 3" HPS-17201','6" MPS00010',6,2620],
+  ['MASH','Mash milling ED-324 · ED-299A/B','PV-00006/07 (8 barg) · alívio 4" LPS00023 · 6" LPS00024 · 10" LPS00028','8" LPS00022 → 10" HPS-17130','6" MPS00011',7,2620],
+  ['E271','Mash milling E-271','Katzen · 13 barg (sem redutora)','8" HPS-17111','8" MPS00026',8,2620],
+  ['VET','Secador de glúten (Vettertec)','PV-00009 (7 barg) · alívio 4" LPS00032 · 6" LPS00033','8" LPS00031','6" MPS00025',9,2620],
+  ['GEA','Extração de glúten (GEA)','PV-00008 (3 barg) · alívio 4" LPS00029 · 8" LPS00030','6" LPS00026','4" MPS00014',10,2620],
+  ['SGR','Secador de grãos','10 barg · 06-PR-PID-00001','','8" MPS00015',11,2620]];
+ SD.forEach(([id,l,sb,ex,ln,i,bx])=>{const y=RY(i);N(id,'term',2900,y,l,sb,{wh:[390,48],ex:ex?[ex]:[]});E(i>=1&&i<=4?'HPS':'MPS',[[bx,y],Lf(id)],{t:ln,at:[bx+6,y-5],fs:10});dot('MPS',bx,y)});
  // efluentes da caldeira e do armazém de biomassa
  N('P00011','pump',2300,300,'P-00011','sump do armazém de biomassa · 10 m³/h',{a:'biomass',wh:[118,118],ex:['rec. 2" WEF00004']});
  N('P00002','pump',2425,300,'P-00002','sump da área da caldeira · 45 m³/h',{wh:[118,118],ex:['rec. 4" WEF00002']});
  N('ETR','term',2362,440,'ETR · efluentes','coleta geral e reservatório de efluentes',{wh:[240,50]});
  E('WEF',[Bt('P00011'),[2300,415]],{t:'2" WEF00004',at:[2240,392],anc:'end',fs:10});E('WEF',[Bt('P00002'),[2425,415]],{t:'4" WEF00002',at:[2431,392],fs:10});
  CUR='cond';
- N('TK00001','tank',2080,740,'TK-00001','Tanque de condensado geral',{img:'TK-00001',a:'cond'});
+ N('TK00001','tank',2080,780,'TK-00001','Tanque de condensado geral',{img:'TK-00001',a:'cond'});
  N('P00003A','pump',2005,525,'P-00003A','condensado · 148 m³/h',{a:'cond',ex:['suc. 10" LPC00011','rec. 6" LPC00027']});
  N('P00003B','pump',2155,525,'P-00003B','condensado · reserva',{a:'cond',ex:['suc. 10" LPC00011','rec. 6" LPC00038']});
  E('LPC',[Tp('TK00001',-75),Bt('P00003A')]);E('LPC',[Tp('TK00001',75),Bt('P00003B')]);lab('LPC','10" LPC00011',2080,612,'middle',10.5);
  E('LPC',[Tp('P00003A'),Bt('CAL',-75)],{st:['6" LPC00027']});E('LPC',[Tp('P00003B'),Bt('CAL',75)],{st:['6" LPC00038']});lab('LPC','6" LPC00014 → desaerador',2080,432,'middle',10.5);
  tkTxt('TK00001',['dreno: 4" LPC00010 → local seguro'],'LPC');
  // retorno de condensado por origem (P&ID 00-PR-PID-00004)
- const CS=[['S7','Pacote etanol (Katzen)','condensado 10 barg · 1189-01-02-103','3" MPC00013',660,'MPC'],['S1','Secador de grãos','P-96001 · 00-PR-PID-00001','3" LPC00023 (N04/N05)',720,'LPC'],['S2','Secador de glúten (Vettertec)','6,5 barg','3" LPC00024 (N06)',780,'LPC'],
-  ['S3','Extração de glúten (GEA)','linhas A e B','2" LPC00001 → une na LPC00024',840,'LPC'],['S4','Evaporação / destilaria (Katzen)','P-586 · 3 barg','6" LPC00005',900,'LPC'],['S5','Secagem de DDGS (Katzen)','P-633 · 3 barg','4" LPC00006',960,'LPC'],['S6','Retorno de purgadores','00-PR-PID-00005','4" LPC00026',1020,'LPC']];
- CS.forEach(([id,l,sb,ln,y,f])=>{N(id,'term',2905,y,l,sb,{wh:[370,50]});
-  if(y<=780)E(f,[Lf(id),[2175,y]],{t:ln,at:[2714,y-6],anc:'end',fs:10});
-  else if(id==='S3'){E(f,[Lf(id),[2520,y],[2520,780]],{na:1,t:ln,at:[2714,y-6],anc:'end',fs:10});dot(f,2520,780)}
-  else{E(f,[Lf(id),[2440,y],[2440,830]],{na:1,t:ln,at:[2714,y-6],anc:'end',fs:10})}});
- E('LPC',[[2440,830],[2175,830]],{t:'6" LPC00035 (N10)',at:[2190,822],fs:10});dot('LPC',2440,900);dot('LPC',2440,960);
+ const CS=[['S7','Pacote etanol (Katzen)','condensado 10 barg · 1189-01-02-103','3" MPC00013',700,'MPC'],['S1','Secador de grãos','P-96001 · 00-PR-PID-00001','3" LPC00023 (N04/N05)',760,'LPC'],['S2','Secador de glúten (Vettertec)','6,5 barg','3" LPC00024 (N06)',820,'LPC'],
+  ['S3','Extração de glúten (GEA)','linhas A e B','2" LPC00001 → une na LPC00024',880,'LPC'],['S4','Evaporação / destilaria (Katzen)','P-586 · 3 barg','6" LPC00005',940,'LPC'],['S5','Secagem de DDGS (Katzen)','P-633 · 3 barg','4" LPC00006',1000,'LPC'],['S6','Retorno de purgadores','00-PR-PID-00005','4" LPC00026',1060,'LPC']];
+ CS.forEach(([id,l,sb,ln,y,f])=>{N(id,'term',2900,y,l,sb,{wh:[390,50]});
+  if(y<=820)E(f,[Lf(id),[2175,y]],{t:ln,at:[2700,y-6],anc:'end',fs:10});
+  else if(id==='S3'){E(f,[Lf(id),[2520,y],[2520,820]],{na:1,t:ln,at:[2700,y-6],anc:'end',fs:10});dot(f,2520,820)}
+  else{E(f,[Lf(id),[2440,y],[2440,868]],{na:1,t:ln,at:[2700,y-6],anc:'end',fs:10})}});
+ E('LPC',[[2440,868],[2175,868]],{t:'6" LPC00035 (N10)',at:[2190,860],fs:10});dot('LPC',2440,940);dot('LPC',2440,1000);
  // ======================= AR COMPRIMIDO =======================
  CUR='air';
  const KS=[['K-36001A','AIN36063'],['K-36001B','AIN36064'],['K-36001C','AIN36065'],['K-36001D','AIN36066'],['K-36001E','AIN36067']];
