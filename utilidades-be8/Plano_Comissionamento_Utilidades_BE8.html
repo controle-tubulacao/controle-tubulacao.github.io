@@ -1516,7 +1516,13 @@ function eqRole(id){const r=ITEM[id];const t=r.t+' '+(r.itemDescription||'');for
 
 /* ---------- fluxo geral das utilidades ---------- */
 const UN=[
- {id:'POCOS',x:110,y:200,l:'Poços artesianos',s:'P-40001A a G · 7 poços',well:1,a:'raw'},
+ {id:'PW0',x:85,y:160,l:'P-40001A',s:'Poço 01 · caldeira',well:1,a:'raw',sm:1},
+ {id:'PW1',x:85,y:272,l:'P-40001B',s:'Poço 03 · utilidades',well:1,a:'raw',sm:1},
+ {id:'PW2',x:85,y:384,l:'P-40001C',s:'Poço 04 · administração',well:1,a:'raw',sm:1},
+ {id:'PW3',x:85,y:496,l:'P-40001D',s:'Poço 02 · apoio caminhoneiros',well:1,a:'raw',sm:1},
+ {id:'PW4',x:85,y:608,l:'P-40001E',s:'Poço 05 · central de resíduos',well:1,a:'raw',sm:1},
+ {id:'PW5',x:85,y:720,l:'P-40001F',s:'Poço 06 · tanques de etanol',well:1,a:'raw',sm:1},
+ {id:'PW6',x:85,y:832,l:'P-40001G',s:'Poço 07 · armaz. DDGS',well:1,a:'raw',sm:1},
  {id:'TK40001',x:420,y:200,l:'TK-40001',s:'Água bruta e RTI · 4000 m³',img:'TK-40001',a:'raw'},
  {id:'INC',x:420,y:470,l:'Combate a incêndio',s:'46-PR-PID-00001',t:1},
  {id:'ETA',x:720,y:200,l:'ETA FAST / Osmose',s:'PS-40001 · potabilização, osmoses e cloração',img:'OSMOSE',a:'water'},
@@ -1539,11 +1545,19 @@ const UN=[
  {id:'GER',x:1720,y:1400,l:'Geradores de emergência',s:'EPU-73001 · EPU-74001 · EPU-75001A',t:1},
 ];
 function drawUtil(){const box=$('#ufc');if(!box)return;const W=1880,H=1520;const P={};
- UN.forEach(n=>{const w=n.big?260:n.t?(n.tall?220:200):210,h=n.tall?920:n.big?260:n.t?96:200;const y0=n.tall?n.y-60:n.y-h/2;P[n.id]={x:n.x-w/2,y:y0,w,h,n,cx:n.x,cy:y0+h/2,r:n.x+w/2,l:n.x-w/2,t:y0,b:y0+h}});
+ UN.forEach(n=>{const w=n.sm?150:n.big?260:n.t?(n.tall?220:200):210,h=n.sm?112:n.tall?920:n.big?260:n.t?96:200;const y0=n.tall?n.y-60:n.y-h/2;P[n.id]={x:n.x-w/2,y:y0,w,h,n,cx:n.x,cy:y0+h/2,r:n.x+w/2,l:n.x-w/2,t:y0,b:y0+h}});
  const p=P,C=f=>(FLUIDS[f]||{c:'#888'}).c;
  // [fluido, pontos, rótulo, x,y do rótulo]
  const E=[
-  ['WRW',[[p.POCOS.r,200],[p.TK40001.l,200]],'7 × 6" + header 10" WRW40007',p.POCOS.r+6,190],
+  ['WRW',[[p.PW0.r,160],[245,160]],'6" WRW40003',p.PW0.r-4,150,1],
+  ['WRW',[[p.PW1.r,272],[245,272]],'6" WRW40004',p.PW1.r-4,262,1],
+  ['WRW',[[p.PW2.r,384],[245,384]],'6" WRW40005',p.PW2.r-4,374,1],
+  ['WRW',[[p.PW3.r,496],[245,496]],'6" WRW40006',p.PW3.r-4,486,1],
+  ['WRW',[[p.PW4.r,608],[245,608]],'6" WRW40030',p.PW4.r-4,598,1],
+  ['WRW',[[p.PW5.r,720],[245,720]],'6" WRW40031',p.PW5.r-4,710,1],
+  ['WRW',[[p.PW6.r,832],[245,832]],'6" WRW40032',p.PW6.r-4,822,1],
+  ['WRW',[[245,160],[245,832]],'',0,0,1],
+  ['WRW',[[245,200],[p.TK40001.l,200]],'10" WRW40007',252,190],
   ['WRW',[[p.TK40001.r,200],[p.ETA.l,200]],'14" WRW40021',p.TK40001.r+6,190],
   ['WRW',[[420,p.TK40001.b],[420,p.INC.t]],'18" WRW40011',426,(p.TK40001.b+p.INC.t)/2],
   ['WDE',[[p.ETA.r,170],[850,170],[850,130],[p.TK30001.l,130]],'desmi',856,124],
@@ -1554,14 +1568,19 @@ function drawUtil(){const box=$('#ufc');if(!box)return;const W=1880,H=1520;const
   ['BIO',[[p.BIO.l,110],[p.CAL.r,110]],'biomassa',p.CAL.r+8,102],
   ['MPS',[[p.CAL.r,250],[p.PROC.l,250]],'vapor 13 barg',p.CAL.r+8,242],
   ['LPC',[[p.PROC.l,480],[p.TK00001.r,480]],'retorno de condensado',p.TK00001.r+8,472],
-  ['LPC',[[1350,p.TK00001.t],[1350,p.CAL.b]],'6" LPC00014 → desaerador',1356,(p.TK00001.t+p.CAL.b)/2],
+  ['LPC',[[1350,p.TK00001.t],[1350,p.CAL.b]],'6" LPC00014',1356,(p.TK00001.t+p.CAL.b)/2],
   ['WHH',[[p.TK30002.r,590],[1150,590],[1150,640],[p.PROC.l,640]],'moinho · glúten · chiller',1160,632],
   ['WLH',[[p.TK30003.r,360],[1120,360],[1120,780],[p.CT.l,780]],'make-up das torres',1126,772],
   ['CTW',[[p.CT.r,770],[p.PROC.l,770]],'água de resfriamento',p.CT.r+8,762],
   ['CTW',[[p.PROC.l,830],[p.CT.r,830]],'retorno',p.CT.r+8,848],
   ['WDR',[[p.TK40002.r,820],[1095,820],[1095,1180],[p.PRED.l,1180]],'rede de água potável',1105,1172],
   ['AIN',[[p.K.r,1060],[p.V36.l,1060]],'descarga dos compressores',p.K.r+6,1052],
-  ['AIN',[[p.V36.r,1060],[p.PROC.l,1060]],'6" AIN36003 · ar de instrumentos para processo e utilidades',p.V36.r+8,1052],
+  ['AIN',[[p.V36.r,1060],[p.PROC.l,1060]],'6" AIN36003 · header de ar de instrumentos → processo',p.V36.r+8,1052],
+  ['AIN',[[420,p.V36.b],[420,p.TK42001.t]],'ar · tanque de diesel',426,(p.V36.b+p.TK42001.t)/2+4],
+  ['AIN',[[780,1060],[780,p.ETA.b]],'AIN36050/51 · AINB400xx · FAST',786,700],
+  ['AIN',[[1300,1060],[1300,p.CT.b]],'1" AIN36022 · torres',1306,1000],
+  ['AIN',[[1462,1060],[1462,p.CAL.b-40],[p.CAL.r-30,p.CAL.b-40]],'2" AIN36018 · caldeira',1468,300],
+  ['AIN',[[1462,560],[p.TK00001.r,560]],'AIN36062 · TK-00001',1468,575,1],
   ['DOL',[[p.CAM.r,1330],[p.TK42001.l,1330]],'4" DOL42001',p.CAM.r+6,1322],
   ['DOL',[[p.TK42001.r,1300],[p.BD.l,1300]],'2" DOL42003',p.TK42001.r+6,1292],
   ['DOL',[[p.BD.r,1330],[p.QUE.l,1330]],'1 1/2" DOL20006',p.BD.r+8,1322],
@@ -1569,8 +1588,8 @@ function drawUtil(){const box=$('#ufc');if(!box)return;const W=1880,H=1520;const
   ['DOL',[[720,p.BD.t],[720,560],[p.INC.r,470]],'1 1/2" DOL42010 · incêndio',726,900],
  ];
  const used=new Set();let sv='';
- E.forEach(([f,pts,lab,lx,ly])=>{used.add(f);const c=C(f);let d='M'+pts.map(q=>q.join(',')).join(' L');if(pts.length===3&&pts[2][1]!==pts[1][1]&&pts[2][0]!==pts[1][0])d=`M${pts[0][0]},${pts[0][1]} V${pts[2][1]} H${pts[2][0]}`;
-  sv+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="5" stroke-linejoin="round" opacity=".92" marker-end="url(#um${f})"/><text x="${lx}" y="${ly}" font-size="12" font-weight="700" fill="${c}" stroke="#fff" stroke-width="4" paint-order="stroke">${esc(lab)}</text>`});
+ E.forEach(([f,pts,lab,lx,ly,na])=>{used.add(f);const c=C(f);let d='M'+pts.map(q=>q.join(',')).join(' L');if(pts.length===3&&pts[2][1]!==pts[1][1]&&pts[2][0]!==pts[1][0])d=`M${pts[0][0]},${pts[0][1]} V${pts[2][1]} H${pts[2][0]}`;
+  sv+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="${f==='AIN'?4:5}" stroke-linejoin="round" opacity=".92" ${na&&!lab?'':`marker-end="url(#um${f})"`}/>${lab?'':'<!--'}<text x="${lx}" y="${ly}" font-size="12" font-weight="700" fill="${c}" stroke="#fff" stroke-width="4" paint-order="stroke">${esc(lab)}</text>${lab?'':'-->'}`});
  const mk=[...used].map(f=>`<marker id="um${f}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0L10,5L0,10z" fill="${C(f)}"/></marker>`).join('');
  const bands=[[60,940,'ÁGUA · VAPOR · CONDENSADO · RESFRIAMENTO'],[960,1150,'AR COMPRIMIDO'],[1190,1490,'ÓLEO DIESEL']];
  let bg='';bands.forEach(([a,b,l],i)=>{bg+=`<rect x="0" y="${a}" width="${W}" height="${b-a}" fill="${i%2?'#f6f8fb':'#fbfcfd'}"/><text x="14" y="${a+20}" font-size="12.5" font-weight="800" fill="#e07b00">${l}</text>`});
