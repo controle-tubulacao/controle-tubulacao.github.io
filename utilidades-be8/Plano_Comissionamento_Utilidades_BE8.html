@@ -159,7 +159,9 @@ textarea.groupNote{width:100%;min-height:52px;border:1px solid var(--rule);paddi
 .sbt td small{display:inline-block;min-width:38px;font-weight:800;color:#56687a;font-size:10px;text-transform:uppercase}.sbc{display:inline-block;color:#fff;font:800 11px var(--hd);border-radius:4px;padding:2px 6px;margin-right:6px;margin-bottom:3px}
 .sbt .uc{display:flex;flex-wrap:wrap;gap:3px}.sbt .uc i{font-style:normal;font-size:10.5px;font-weight:700;border:1px solid #d5dde6;border-radius:4px;padding:1px 4px;background:#f6f8fb;color:#22364a}.sbt .uc i.sbe{background:#e8f1fb;border-color:#9db8d6;color:#0b4f9c}.sbt .uc i.sbi{border-radius:9px;background:#fff7e6;border-color:#f0c070}.sbt .uc i.sbv{background:#eef7ee;border-color:#9fcca2}
 .sbt td.sbarg{background:#fff8ec;min-width:260px;color:#4a3200}.sbp{min-width:70px}.sbbar{height:6px;background:#e5eaf0;border-radius:3px;margin-top:3px}.sbbar i{display:block;height:100%;background:#2e9b4f;border-radius:3px}
-.ubdg{position:absolute;right:4px;top:4px;color:#fff;font:800 10.5px var(--hd);border-radius:4px;padding:1px 5px;z-index:2}.sbbtn[aria-pressed="true"]{background:#e07b00;color:#fff;border-color:#e07b00}.uzb{display:flex;gap:6px;margin-top:8px}#ufw.uzoom{overflow-x:auto}
+.ubdg{position:absolute;right:4px;top:4px;color:#fff;font:800 10.5px var(--hd);border-radius:4px;padding:1px 5px;z-index:2}.sbbtn[aria-pressed="true"]{background:#e07b00;color:#fff;border-color:#e07b00}.un.ufast{justify-content:flex-start;padding:4px;background:#fff;border:2px dashed #0b7fab}.ufh{display:flex;gap:6px;align-items:center;text-align:left;width:100%}.ufh img{height:58px;width:auto;flex:0 0 auto;max-width:96px}.ufh b{display:block;font-size:12px}.ufh small{display:block;font-size:9.5px;color:#8a4b00}
+.ufg{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:4px;width:100%}.ufc{display:flex;gap:3px;align-items:flex-start;text-align:left;border:1px solid #c9d6e3;border-radius:6px;background:#f7fafc;padding:3px}.ufc img{width:32px;height:22px;flex:0 0 32px;object-fit:contain;filter:none}.ufc span{font-size:9.5px;line-height:1.25;color:#22364a;font-weight:700}.ufc span b{display:block;color:#0b4f9c;font-size:10px}
+.uzb{display:flex;gap:6px;margin-top:8px}#ufw.uzoom{overflow-x:auto}
 .ulink{cursor:pointer}.ulink:hover b{color:#1f6fd1;text-decoration:underline}
 .pfd{background:linear-gradient(#fff,#f7f9fb)}.pfdhd{display:flex;justify-content:space-between;background:#0d202e;color:#fff;font:600 12px var(--bd);padding:6px 10px;margin-top:6px}
 .pfn{position:absolute;display:flex;flex-direction:column;align-items:center;text-align:center;box-sizing:border-box}
@@ -1536,7 +1538,7 @@ function eqRole(id){const r=ITEM[id];const t=r.t+' '+(r.itemDescription||'');for
 let UZOOM=0;
 function drawUFlow(boxId,wrapId,legId,VA){const box=$('#'+boxId);if(!box)return;VA=VA||null;
  const W=3100,P={},ED=[],LB=[],DT=[];let CUR='raw';const C=f=>(FLUIDS[f]||{c:'#888'}).c;
- const SZ={well:[124,124],pump:[132,128],comp:[124,118],tank:[190,190],eq:[210,176],big:[300,290],vas:[170,150],filt:[130,112],term:[240,60]};
+ const SZ={fast:[262,236],well:[124,124],pump:[132,128],comp:[124,118],tank:[190,190],eq:[210,176],big:[300,290],vas:[170,150],filt:[130,112],term:[240,60]};
  const N=(id,k,x,y,l,s,o={})=>{let [w,h]=o.wh||SZ[k];if(k==='term'&&o.ex&&!o.wh)h=Math.max(h,40+o.ex.length*14);P[id]={id,k,x:x-w/2,y:y-h/2,w,h,cx:x,cy:y,l,s,...o,ar:o.a||CUR};return P[id]};
  const Lf=(i,d=0)=>[P[i].x,P[i].cy+d],Rt=(i,d=0)=>[P[i].x+P[i].w,P[i].cy+d],Tp=(i,d=0)=>[P[i].cx+d,P[i].y],Bt=(i,d=0)=>[P[i].cx+d,P[i].y+P[i].h];
  const lab=(f,lines,x,y,anc='start',fs=11.5)=>{LB.push({f,lines:[].concat(lines).filter(Boolean),x,y,anc,fs,cur:CUR})};
@@ -1556,8 +1558,8 @@ function drawUFlow(boxId,wrapId,legId,VA){const box=$('#'+boxId);if(!box)return;
  E('WRW',[Tp('INC',30),Bt('TK40001',30)],{t:['16" WRW40002','retorno'],at:[466,610],fs:10.5});
  E('WRW',[Rt('TK40001'),[600,440]],{na:1,t:'14" WRW40021',at:[527,432],fs:10.5});
  E('WRW',[[600,200],[600,800]],{na:1});dot('WRW',600,440);
- N('ETA','eq',800,200,'ETA FAST / Osmose','PS-40001 · potabilização, osmoses, cloração',{img:'OSMOSE',a:'water',eq:'PS-40001'});
- E('WRW',[[600,200],Lf('ETA')],{t:['2" WRW40034','6" WRW40036','6" WRW40038','6" WRW40042'],at:[606,140],fs:10.5});
+ N('ETA','fast',800,200,'ETA FAST / Osmose · PS-40001','bombas do pacote sem TAG no P&ID (nota 1: Be8 confirmar)',{img:'OSMOSE',a:'water',eq:'PS-40001',wh:[262,236],pumps:[['Bombas de água potável','2" WRW40034','→ skid → 1 1/2" WDR30001'],['Bombas de água desmi','6" WRW40036','→ OR-01 → 3" WDE · rejeito WEF30001'],['Bombas de água bruta p/ AD','6" WRW40038','→ 4" WRW40024'],['Bombas de baixa dureza','6" WRW40042','→ OR-02 → 4" WDE · rejeito WEF30002']]});
+ E('WRW',[[600,200],Lf('ETA')],{st:['2" WRW40034','6" WRW40036','6" WRW40038','6" WRW40042']});
  N('P30005A','pump',760,480,'P-30005A','água bruta → baixa dureza',{a:'raw',ex:['suc. 6" WRW40039','rec. 4" WRW40048']});
  N('P30004A','pump',760,640,'P-30004A','água clorada · 150 m³/h',{a:'raw',ex:['suc. 10" WRW40043','rec. 6" WRW40046']});
  N('P30004B','pump',760,800,'P-30004B','água clorada · 150 m³/h',{a:'raw',ex:['suc. 10" WRW40044','rec. 6" WRW40046']});
@@ -1573,11 +1575,11 @@ function drawUFlow(boxId,wrapId,legId,VA){const box=$('#'+boxId);if(!box)return;
  N('TK30003','tank',1100,460,'TK-30003','Água de baixa dureza · 25 m³',{img:'TK-30003',a:'water'});
  N('TK30002','tank',1100,740,'TK-30002','Água de alta dureza · 100 m³',{img:'TK-30002',a:'water'});
  N('TK40002','tank',1100,1020,'TK-40002','Água potável · 20 m³',{img:'TK-40002',a:'water'});
- E('WDE',[Rt('ETA',-20),Lf('TK30001',0)],{t:['3" WDE · FAST','(sem nº no P&ID)'],at:[906,160],fs:10.5});
- E('WLH',[Rt('ETA',20),[930,220],[930,440],Lf('TK30003',-20)],{t:['4" WDE · FAST','2 1/2" WDE30016'],at:[988,318],fs:10.5});
+ E('WDE',[Rt('ETA',-20),Lf('TK30001',0)],{t:['3" WDE','(sem nº)'],at:[936,160],fs:10});
+ E('WLH',[Rt('ETA',20),[945,220],[945,440],Lf('TK30003',-20)],{t:['4" WDE · FAST','2 1/2" WDE30016'],at:[988,318],fs:10.5});
  E('WRW',[Rt('P30005A'),Lf('TK30003',20)],{t:['4" WRW40048','6" WRW40023'],at:[830,452],fs:10.5});
- E('WHH',[Rt('ETA',50),[955,250],[955,740],Lf('TK30002')],{t:['4" WRW40024','2" WEF30002 · rejeito OR02','1 1/2" WEF30001 · rejeito OR01'],at:[988,600],fs:10.5});
- E('WDR',[Rt('ETA',75),[980,275],[980,1020],Lf('TK40002')],{t:['1 1/2" WDR30001','skid de potabilização'],at:[988,880],fs:10.5});
+ E('WHH',[Rt('ETA',50),[962,250],[962,740],Lf('TK30002')],{t:['4" WRW40024','2" WEF30002 · rejeito OR02','1 1/2" WEF30001 · rejeito OR01'],at:[988,600],fs:10.5});
+ E('WDR',[Rt('ETA',75),[979,275],[979,1020],Lf('TK40002')],{t:['1 1/2" WDR30001','skid de potabilização'],at:[988,880],fs:10.5});
  const tkTxt=(id,lines,f)=>lab(f,lines,P[id].cx,P[id].y+P[id].h+13,'middle',10);
  tkTxt('TK30001',['saída N10: 4" WDE30010 · dreno/ladrão: 10" WDE30007','3" WDE30008 · 2" WDE30013 → FAST'],'WDE');
  tkTxt('TK30003',['dreno/ladrão: 10" WLH30001 · 2" WLH30002','recirculação: 3" WLH30007'],'WLH');
@@ -1706,7 +1708,7 @@ function drawUFlow(boxId,wrapId,legId,VA){const box=$('#'+boxId);if(!box)return;
  const inN=q=>{for(const n of Object.values(P)){if(q[0]>=n.x-4&&q[0]<=n.x+n.w+4&&q[1]>=n.y-4&&q[1]<=n.y+n.h+4)return n}return null};
  const ANAME=a=>({raw:'Água bruta (TK-40001)',water:'Osmose / ETA',air:'Sala de compressores',cond:'Tanque de condensado',diesel:'Tanque de diesel',cooling:'Torres de resfriamento',steam:'Caldeira',biomass:'Biomassa'})[a]||a;
  const seg=(pts,L)=>{const o=[pts[0]];let acc=0;for(let i=1;i<pts.length;i++){const [x0,y0]=pts[i-1],[x1,y1]=pts[i],d=Math.hypot(x1-x0,y1-y0);if(acc+d>=L){const t=(L-acc)/(d||1);o.push([x0+(x1-x0)*t,y0+(y1-y0)*t]);return o}acc+=d;o.push(pts[i])}return o};
- const vis=new Set(),paths=[],labs=[],used=new Set();const RX0=/(?:DRENO\d-|PURGA\d-)?[A-Z]{1,4}-?B?\d{5}R?/g;const gshown=new Set();[...ED.flatMap(e=>[].concat(e.o.t||[],e.o.st||[])),...LB.flatMap(l=>l.lines),...Object.values(P).flatMap(n=>[n.l,n.s||'',...(n.ex||[])])].join(' ').replace(RX0,m=>{gshown.add(uNorm(m));return m});
+ const vis=new Set(),paths=[],labs=[],used=new Set();const RX0=/(?:DRENO\d-|PURGA\d-)?[A-Z]{1,4}-?B?\d{5}R?/g;const gshown=new Set();[...ED.flatMap(e=>[].concat(e.o.t||[],e.o.st||[])),...LB.flatMap(l=>l.lines),...Object.values(P).flatMap(n=>[n.l,n.s||'',...(n.ex||[]),...(n.pumps||[]).flat()])].join(' ').replace(RX0,m=>{gshown.add(uNorm(m));return m});
  ED.forEach(e=>{const sN=inN(e.pts[0]),eN=inN(e.pts.at(-1)),sA=sN?sN.ar:e.cur,eA=eN?eN.ar:e.cur;let mode='full',pts=e.pts;
   if(VA){if(sA===VA&&eA===VA)mode='full';else if(sA===VA)mode='out';else if(eA===VA)mode='in';else return}
   if(mode==='out'&&e.o.br)return;
@@ -1743,6 +1745,7 @@ function drawUFlow(boxId,wrapId,legId,VA){const box=$('#'+boxId);if(!box)return;
  let nd='';
  const BDG={};if(UZONE)(VA?[VA]:Object.keys(USUB)).forEach(ar=>(USUB[ar]||[]).forEach(z=>(z.bdg||[]).forEach(b=>BDG[b]=z)));
  nodes.forEach(q=>{const bd=BDG[q.id];const im=q.img?eqImg(q.img):q.k==='pump'?'eqimg/pump.svg':null;const eq=q.k==='term'?'':(q.eq||q.l);
+  if(q.k==='fast'){nd+=`<div class="un ufast${q.a&&q.a!==VA?' ulink':''}" ${q.a&&q.a!==VA?`data-uopen="${q.a}"`:''} style="left:${q.x-ox}px;top:${q.y-oy}px;width:${q.w}px;height:${q.h}px">${bd?`<span class="ubdg" style="background:${bd.col}">${esc(bd.c)}</span>`:''}<div class="ufh" data-eq="PS-40001"><img src="${eqImg('OSMOSE')}" alt=""><div><b>${esc(q.l)}</b><small>${esc(q.s)}</small></div></div><div class="ufg">${q.pumps.map(p=>`<div class="ufc"><img src="eqimg/pump.svg" alt=""><span><b>${esc(p[0])}</b>${tk(p[1],'span')} ${tk(p[2],'span')}</span></div>`).join('')}</div></div>`;return}
   const body=q.k==='well'?WELLSVG:im?`<img src="${im}" alt="" loading="lazy">`:q.k==='term'?'':TANKSVG;
   nd+=`<div class="un u${q.k}${q.a&&q.a!==VA?' ulink':''}" ${q.a&&q.a!==VA?`data-uopen="${q.a}"`:''} ${eq?`data-eq="${esc(eq)}" data-es="${esc(q.s||'')}" data-ex="${esc((q.ex||[]).join('|'))}"`:''} style="left:${q.x-ox}px;top:${q.y-oy}px;width:${q.w}px;height:${q.h}px">${bd?`<span class="ubdg" style="background:${bd.col}">${esc(bd.c)}</span>`:''}${body}<b>${esc(q.l)}</b>${q.s?`<small>${tk(q.s,'span')}</small>`:''}${(q.ex||[]).map(e=>`<span class="ux">${tk(e,'span')}</span>`).join('')}</div>`});
  // demais linhas
