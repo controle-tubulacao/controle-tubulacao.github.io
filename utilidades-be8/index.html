@@ -1532,8 +1532,9 @@ const UN=[
  {id:'TK40002',x:1010,y:820,l:'TK-40002',s:'Água potável',img:'TK-40002',a:'water'},
  {id:'CAL',x:1350,y:170,l:'Caldeira',s:'HPB · vapor 13 barg · desaerador',img:'CALDEIRA',a:'steam',big:1},
  {id:'BIO',x:1720,y:110,l:'Armazém de biomassa',s:'combustível da caldeira',t:1,a:'biomass'},
- {id:'TK00001',x:1350,y:500,l:'TK-00001',s:'Condensado geral · P-00003A/B',img:'TK-00001',a:'cond'},
- {id:'CT',x:1350,y:800,l:'Torres de resfriamento',s:'CT-31001 / CT-31002 · P-1402 / P-1412',img:'CT-31002',a:'cooling'},
+ {id:'PC',x:1350,y:375,l:'P-00003A/B',s:'Bombas de condensado · 148 m³/h',img:'P-00003A',a:'cond',pc:1},
+ {id:'TK00001',x:1350,y:585,l:'TK-00001',s:'Tanque de condensado geral',img:'TK-00001',a:'cond',tk:1},
+ {id:'CT',x:1350,y:830,l:'Torres de resfriamento',s:'CT-31001 / CT-31002 · P-1402 / P-1412',img:'CT-31002',a:'cooling'},
  {id:'PROC',x:1720,y:240,l:'Processo Be8',s:'Destilaria · fermentação · cozimento · mash milling · secadores · glúten · DDGS',t:1,tall:1},
  {id:'PRED',x:1720,y:1180,l:'Prédios e vestiários',s:'água potável',t:1},
  {id:'K',x:110,y:1060,l:'Compressores',s:'K-36001A a E · K-36002',img:'K-36001',a:'air'},
@@ -1545,7 +1546,7 @@ const UN=[
  {id:'GER',x:1720,y:1400,l:'Geradores de emergência',s:'EPU-73001 · EPU-74001 · EPU-75001A',t:1},
 ];
 function drawUtil(){const box=$('#ufc');if(!box)return;const W=1880,H=1520;const P={};
- UN.forEach(n=>{const w=n.sm?150:n.big?260:n.t?(n.tall?220:200):210,h=n.sm?112:n.tall?920:n.big?260:n.t?96:200;const y0=n.tall?n.y-60:n.y-h/2;P[n.id]={x:n.x-w/2,y:y0,w,h,n,cx:n.x,cy:y0+h/2,r:n.x+w/2,l:n.x-w/2,t:y0,b:y0+h}});
+ UN.forEach(n=>{const w=n.pc?200:n.tk?200:n.sm?150:n.big?260:n.t?(n.tall?220:200):210,h=n.pc?110:n.tk?170:n.sm?112:n.tall?920:n.big?260:n.t?96:200;const y0=n.tall?n.y-60:n.y-h/2;P[n.id]={x:n.x-w/2,y:y0,w,h,n,cx:n.x,cy:y0+h/2,r:n.x+w/2,l:n.x-w/2,t:y0,b:y0+h}});
  const p=P,C=f=>(FLUIDS[f]||{c:'#888'}).c;
  // [fluido, pontos, rótulo, x,y do rótulo]
  const E=[
@@ -1567,9 +1568,10 @@ function drawUtil(){const box=$('#ufc');if(!box)return;const W=1880,H=1520;const
   ['WDE',[[p.TK30001.r,130],[p.CAL.l,130]],'reposição do desaerador',p.TK30001.r+6,122],
   ['BIO',[[p.BIO.l,110],[p.CAL.r,110]],'biomassa',p.CAL.r+8,102],
   ['MPS',[[p.CAL.r,250],[p.PROC.l,250]],'vapor 13 barg',p.CAL.r+8,242],
-  ['LPC',[[p.PROC.l,480],[p.TK00001.r,480]],'retorno de condensado',p.TK00001.r+8,472],
-  ['LPC',[[1350,p.TK00001.t],[1350,p.CAL.b]],'6" LPC00014',1356,(p.TK00001.t+p.CAL.b)/2],
-  ['WHH',[[p.TK30002.r,590],[1150,590],[1150,640],[p.PROC.l,640]],'moinho · glúten · chiller',1160,632],
+  ['LPC',[[p.PROC.l,540],[p.TK00001.r,540]],'retorno de condensado',p.TK00001.r+18,532],
+  ['LPC',[[1350,p.TK00001.t],[1350,p.PC.b]],'',0,0],
+  ['LPC',[[1350,p.PC.t],[1350,p.CAL.b]],'6" LPC00014 → desaerador',1356,(p.PC.t+p.CAL.b)/2+4],
+  ['WHH',[[p.TK30002.r,590],[1150,590],[1150,702],[p.PROC.l,702]],'moinho · glúten · chiller',1160,694],
   ['WLH',[[p.TK30003.r,360],[1120,360],[1120,780],[p.CT.l,780]],'make-up das torres',1126,772],
   ['CTW',[[p.CT.r,770],[p.PROC.l,770]],'água de resfriamento',p.CT.r+8,762],
   ['CTW',[[p.PROC.l,830],[p.CT.r,830]],'retorno',p.CT.r+8,848],
@@ -1580,7 +1582,7 @@ function drawUtil(){const box=$('#ufc');if(!box)return;const W=1880,H=1520;const
   ['AIN',[[780,1060],[780,p.ETA.b]],'AIN36050/51 · AINB400xx · FAST',786,700],
   ['AIN',[[1300,1060],[1300,p.CT.b]],'1" AIN36022 · torres',1306,1000],
   ['AIN',[[1462,1060],[1462,p.CAL.b-40],[p.CAL.r-30,p.CAL.b-40]],'2" AIN36018 · caldeira',1468,300],
-  ['AIN',[[1462,560],[p.TK00001.r,560]],'AIN36062 · TK-00001',1468,575,1],
+  ['AIN',[[1462,615],[p.TK00001.r,615]],'AIN36062',1468,632,1],
   ['DOL',[[p.CAM.r,1330],[p.TK42001.l,1330]],'4" DOL42001',p.CAM.r+6,1322],
   ['DOL',[[p.TK42001.r,1300],[p.BD.l,1300]],'2" DOL42003',p.TK42001.r+6,1292],
   ['DOL',[[p.BD.r,1330],[p.QUE.l,1330]],'1 1/2" DOL20006',p.BD.r+8,1322],
