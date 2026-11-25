@@ -1530,7 +1530,7 @@ function eqRole(id){const r=ITEM[id];const t=r.t+' '+(r.itemDescription||'');for
 /* ---------- fluxo geral das utilidades (todas as bombas e todas as linhas com TAG) ---------- */
 let UZOOM=0;
 function drawUFlow(boxId,wrapId,legId,VA){const box=$('#'+boxId);if(!box)return;VA=VA||null;
- const W=2800,P={},ED=[],LB=[],DT=[];let CUR='raw';const C=f=>(FLUIDS[f]||{c:'#888'}).c;
+ const W=3100,P={},ED=[],LB=[],DT=[];let CUR='raw';const C=f=>(FLUIDS[f]||{c:'#888'}).c;
  const SZ={well:[124,124],pump:[132,128],comp:[124,118],tank:[190,190],eq:[210,176],big:[300,290],vas:[170,150],filt:[130,112],term:[240,60]};
  const N=(id,k,x,y,l,s,o={})=>{let [w,h]=o.wh||SZ[k];if(k==='term'&&o.ex&&!o.wh)h=Math.max(h,40+o.ex.length*14);P[id]={id,k,x:x-w/2,y:y-h/2,w,h,cx:x,cy:y,l,s,...o,ar:o.a||CUR};return P[id]};
  const Lf=(i,d=0)=>[P[i].x,P[i].cy+d],Rt=(i,d=0)=>[P[i].x+P[i].w,P[i].cy+d],Tp=(i,d=0)=>[P[i].cx+d,P[i].y],Bt=(i,d=0)=>[P[i].cx+d,P[i].y+P[i].h];
@@ -1602,12 +1602,31 @@ function drawUFlow(boxId,wrapId,legId,VA){const box=$('#'+boxId);if(!box)return;
  // ======================= CALDEIRA · VAPOR · CONDENSADO =======================
  CUR='steam';
  N('CAL','big',2080,250,'Caldeira','HPB · 13 barg · desaerador',{img:'CALDEIRA',a:'steam',eq:'CALDEIRA'});
- N('BIO','term',2620,62,'Armazém de biomassa','transportador (sem tubulação)',{wh:[240,50],a:'biomass'});
- E('BIO',[Lf('BIO'),[2080,62],Tp('CAL')],{t:'biomassa',at:[2300,54],fs:10.5});
- N('PMPS','term',2620,190,'Processo · vapor de média/alta','destilaria, cozimento, mash milling, secadores',{wh:[300,70]});
- E('MPS',[Rt('CAL',-40),Lf('PMPS',20)],{t:['14" HPS00001 · 1/2" HPS00002','24" MPS00001 · 16" MPS00002','12" MPS00003 · 12" MPS00004 · 10" MPS00008','10" MPS00013 · 6" MPS00010 · 6" MPS00011','6" MPS00025 · 8" MPS00026 · 4" MPS00014','8" MPS00015 · 8" MPS00005 · 10" MPS00007'],at:[2236,118],fs:10});
- N('PLPS','term',2620,370,'Processo · vapor de baixa','após as redutoras PV-00001…PV-00009',{wh:[300,70]});
- E('LPS',[Rt('CAL',90),[2400,340],[2400,370],Lf('PLPS')],{t:['30" LPS00010 · 8" LPS00013 · 10" LPS00015','16" LPS00014 · 18" LPS00017 · 6" LPS00026','8" LPS00030 · 8" LPS00031 · 8" LPS10201','16" LPS-17616 · 24" LPS00020'],at:[2236,280],fs:10});
+ // biomassa: não é tubulação
+ N('BIO','term',2360,48,'Armazém de biomassa','sem tubulação',{wh:[230,46],a:'biomass'});
+ E('BIO',[Lf('BIO'),[2080,48],Tp('CAL')],{t:'PS-24001 · transporte de biomassa (esteiras)',at:[2090,68],fs:10});
+ // bombas de atemperação dentro do pacote da caldeira
+ [['P00001A','P-00001A','atemperação · 50 m³/h','4" MPC00007',255,5],['P00001B','P-00001B','atemperação · reserva','4" MPC00008',380,130]].forEach(([id,t,sb,rec,y,d])=>{N(id,'pump',1800,y,t,sb,{wh:[124,118],ex:[(d<100?'suc. 3" MPC00009':'suc. 3" MPC00010'),'rec. '+rec]});E('MPC',[Lf('CAL',d),Rt(id)]);E('MPC',[Lf(id),[1722,y],[1722,128],Lf('CAL',-122)],{na:y>300})});
+ lab('MPC',['4" MPC00007 · 4" MPC00008 → 3" MPC00012','1 1/2" MPC00011 → atemperação DS-00002/00003'],1728,100,'start',10);
+ // saída de vapor da caldeira e distribuição por destino (P&ID 00-PR-PID-00002 e 00-PR-PID-00003)
+ E('MPS',[Rt('CAL',-70),[2500,180]],{na:1,t:['14" HPS00001 · 1/2" HPS00002','24" MPS00001 → PV-00016','20" MPS00001 → 16" MPS00002','8" MPS00005 → desaerador'],at:[2236,122],fs:10});
+ E('MPS',[[2500,80],[2500,260],[2620,260],[2620,560]],{na:1});dot('MPS',2500,180);
+ lab('MPS',['12" MPS00003','10" MPS00013'],2506,236,'start',10);
+ const SD=[['ATM','Atmosfera · silenciador','alívio PSV-00005 (16 barg)','30" LPS00010','10" MPS00007',80,2500,'LPS'],
+  ['KAT1','Katzen · E-539A–C · E-580A/B · E-701 · D-560/E-562 · T-507','PV-00004 (3 barg) · alívio 18" LPS00017 · 16" LPS00014','20" HPS-17101 · 8" LPS00013 · 10" LPS00015','10" MPS00008',140,2500,'LPS'],
+  ['DDGS','Área da secagem de DDGS (Grand)','redutoras PV-00001 / PV-00002','14" HPS-17121 (4 ligações)','12" MPS00004',200,2500,'LPS'],
+  ['COZ','Cozimento E-343/E-446 · químicos ED-420/ED-679','PV-00005 (3 barg) · alívio 6" LPS00019 · 8" LPS00021','12" LPS00018 · 3" HPS-17203 · 3" HPS-17201','6" MPS00010',260,2620,'LPS'],
+  ['MASH','Mash milling ED-324 · ED-299A/B','PV-00006/07 (8 barg) · alívio 4" LPS00023 · 6" LPS00024 · 10" LPS00028','8" LPS00022 → 10" HPS-17130','6" MPS00011',320,2620,'LPS'],
+  ['E271','Mash milling E-271','Katzen · 13 barg (sem redutora)','8" HPS-17111','8" MPS00026',380,2620,'MPS'],
+  ['VET','Secador de glúten (Vettertec)','PV-00009 (7 barg) · alívio 4" LPS00032 · 6" LPS00033','8" LPS00031','6" MPS00025',440,2620,'LPS'],
+  ['GEA','Extração de glúten (GEA)','PV-00008 (3 barg) · alívio 4" LPS00029 · 8" LPS00030','6" LPS00026','4" MPS00014',500,2620,'LPS'],
+  ['SGR','Secador de grãos','10 barg · 06-PR-PID-00001','','8" MPS00015',560,2620,'MPS']];
+ SD.forEach(([id,l,sb,ex,ln,y,bx])=>{N(id,'term',2900,y,l,sb,{wh:[390,56],ex:ex?[ex]:[]});E('MPS',[[bx,y],Lf(id)],{t:ln,at:[bx+6,y-6],fs:10});dot('MPS',bx,y)});
+ // efluentes da caldeira e do armazém de biomassa
+ N('P00011','pump',2300,300,'P-00011','sump do armazém de biomassa · 10 m³/h',{a:'biomass',wh:[118,118],ex:['rec. 2" WEF00004']});
+ N('P00002','pump',2425,300,'P-00002','sump da área da caldeira · 45 m³/h',{wh:[118,118],ex:['rec. 4" WEF00002']});
+ N('ETR','term',2362,440,'ETR · efluentes','coleta geral e reservatório de efluentes',{wh:[240,50]});
+ E('WEF',[Bt('P00011'),[2300,415]],{t:'2" WEF00004',at:[2240,392],anc:'end',fs:10});E('WEF',[Bt('P00002'),[2425,415]],{t:'4" WEF00002',at:[2431,392],fs:10});
  CUR='cond';
  N('TK00001','tank',2080,740,'TK-00001','Tanque de condensado geral',{img:'TK-00001',a:'cond'});
  N('P00003A','pump',2005,525,'P-00003A','condensado · 148 m³/h',{a:'cond',ex:['suc. 10" LPC00011','rec. 6" LPC00027']});
@@ -1615,9 +1634,14 @@ function drawUFlow(boxId,wrapId,legId,VA){const box=$('#'+boxId);if(!box)return;
  E('LPC',[Tp('TK00001',-75),Bt('P00003A')]);E('LPC',[Tp('TK00001',75),Bt('P00003B')]);lab('LPC','10" LPC00011',2080,612,'middle',10.5);
  E('LPC',[Tp('P00003A'),Bt('CAL',-75)],{st:['6" LPC00027']});E('LPC',[Tp('P00003B'),Bt('CAL',75)],{st:['6" LPC00038']});lab('LPC','6" LPC00014 → desaerador',2080,432,'middle',10.5);
  tkTxt('TK00001',['dreno: 4" LPC00010 → local seguro'],'LPC');
- N('PCOND','term',2620,740,'Processo · retorno de condensado','secadores, glúten, evaporação, DDGS, purgadores',{wh:[300,70]});
- E('LPC',[Lf('PCOND'),Rt('TK00001')],{t:['3" LPC00023 · 3" LPC00024 · 2" LPC00001','6" LPC00005 · 4" LPC00006 · 4" LPC00026','6" LPC00035 (N10)'],at:[2182,680],fs:10.5});
- E('MPC',[Lf('PCOND',25),[2280,765],[2280,800],Rt('TK00001',60)],{t:'3" MPC00013',at:[2286,790],fs:10.5});
+ // retorno de condensado por origem (P&ID 00-PR-PID-00004)
+ const CS=[['S7','Pacote etanol (Katzen)','condensado 10 barg · 1189-01-02-103','3" MPC00013',660,'MPC'],['S1','Secador de grãos','P-96001 · 00-PR-PID-00001','3" LPC00023 (N04/N05)',720,'LPC'],['S2','Secador de glúten (Vettertec)','6,5 barg','3" LPC00024 (N06)',780,'LPC'],
+  ['S3','Extração de glúten (GEA)','linhas A e B','2" LPC00001 → une na LPC00024',840,'LPC'],['S4','Evaporação / destilaria (Katzen)','P-586 · 3 barg','6" LPC00005',900,'LPC'],['S5','Secagem de DDGS (Katzen)','P-633 · 3 barg','4" LPC00006',960,'LPC'],['S6','Retorno de purgadores','00-PR-PID-00005','4" LPC00026',1020,'LPC']];
+ CS.forEach(([id,l,sb,ln,y,f])=>{N(id,'term',2905,y,l,sb,{wh:[370,50]});
+  if(y<=780)E(f,[Lf(id),[2175,y]],{t:ln,at:[2714,y-6],anc:'end',fs:10});
+  else if(id==='S3'){E(f,[Lf(id),[2520,y],[2520,780]],{na:1,t:ln,at:[2714,y-6],anc:'end',fs:10});dot(f,2520,780)}
+  else{E(f,[Lf(id),[2440,y],[2440,830]],{na:1,t:ln,at:[2714,y-6],anc:'end',fs:10})}});
+ E('LPC',[[2440,830],[2175,830]],{t:'6" LPC00035 (N10)',at:[2190,822],fs:10});dot('LPC',2440,900);dot('LPC',2440,960);
  // ======================= AR COMPRIMIDO =======================
  CUR='air';
  const KS=[['K-36001A','AIN36063'],['K-36001B','AIN36064'],['K-36001C','AIN36065'],['K-36001D','AIN36066'],['K-36001E','AIN36067']];
@@ -1628,7 +1652,7 @@ function drawUFlow(boxId,wrapId,legId,VA){const box=$('#'+boxId);if(!box)return;
  E('AIN',[Rt('V36001'),Lf('V36002')],{t:['6" AIN36070','6" AIN36001'],at:[910,1352],fs:10.5});
  E('AIN',[Rt('V36002'),[1200,1380]],{na:1,t:'6" AIN36003',at:[1130,1372],fs:10.5});
  E('AIN',[[1200,1230],[1200,1610]],{na:1});dot('AIN',1200,1380);
- E('AIN',[[1200,1230],[1625,1230],[1625,260],Lf('CAL',10)],{t:['6" AIN36010 · 3" AIN36005','2" AIN36018 → caldeira'],st:['6" AIN36010 · 3" AIN36005','2" AIN36018 → caldeira','1 1/2" AIN36062 → TK-00001'],at:[1658,1120],fs:10.5});
+ E('AIN',[[1200,1230],[1625,1230],[1625,452],[1955,452],Bt('CAL',-125)],{t:['6" AIN36010 · 3" AIN36005','2" AIN36018 → caldeira'],st:['6" AIN36010 · 3" AIN36005','2" AIN36018 → caldeira','1 1/2" AIN36062 → TK-00001'],at:[1658,1120],fs:10.5});
  E('AIN',[[1625,812],[1985,812]],{br:1,t:'1 1/2" AIN36062',at:[1940,804],fs:10});dot('AIN',1625,812);
  E('AIN',[[1200,1250],[890,1250],[890,Bt('ETA')[1]]],{t:['2" AIN-B40001 · 2" AIN-B40002 · 1" AIN-B40003','2" AIN-B40004 · 1" AIN-B40005 · 1" AIN-B40006','1" AIN-B40007 · 1" AIN-B40008 → FAST'],at:[896,1200],fs:10});
  E('AIN',[[1200,1440],[1680,1440],[1680,1370],[1698,1370]],{t:['4" AIN36019 · 1" AIN36022','→ torres de resfriamento'],st:['4" AIN36019 · 1" AIN36022'],at:[1206,1432],fs:10.5});
@@ -1649,7 +1673,7 @@ function drawUFlow(boxId,wrapId,legId,VA){const box=$('#'+boxId);if(!box)return;
  E('CTWD',[[1995,1440],[2346,1440]],{na:1});E('CTWF',[[2463,1440],[2697,1440]],{na:1});
  N('DEST','term',2170,1565,'Destilaria','seção 1400 · Katzen',{wh:[300,60]});
  N('FERM','term',2580,1565,'Fermentação','seção 1400 · Katzen',{wh:[300,60]});
- E('CTWD',[[2170,1440],Tp('DEST')],{t:['30" CTW-14105 · 18" CTW-14106','4" CTW-14108 · 3" CTW-B31002'],at:[2176,1470],fs:10.5});
+ E('CTWD',[[2170,1440],Tp('DEST')],{t:['30" CTW-14105 · 18" CTW-14106','3" CTW-B31002'],at:[2176,1470],fs:10.5});
  E('CTWF',[[2580,1440],Tp('FERM')],{t:['28" CTW-14413 · 2" CTW-14408','8" CTW-14412 · 16" CTW-14901','6" CTW-14902'],at:[2586,1462],fs:10.5});
  E('CTWDR',[Lf('DEST'),[1800,1565],Bt('CT')],{t:['30" CTW-14215','18" CTW-14315'],at:[1806,1470],fs:10.5});
  E('CTWFR',[Rt('FERM'),[2770,1565],[2770,1200],[1840,1200],Tp('CT',40)],{t:['retorno: 28" CTW-14411 · 8" CTW-14815 · 6" CTW-14903 · 28" CTW-14914'],at:[2764,1192],anc:'end',fs:10.5});
@@ -1665,13 +1689,13 @@ function drawUFlow(boxId,wrapId,legId,VA){const box=$('#'+boxId);if(!box)return;
   E('DOL',[Rt('TK42001'),[670,1880],[670,y],Lf('F1'+s)],{});E('DOL',[Rt('F1'+s),Lf('PD'+s)],{});E('DOL',[Rt('PD'+s),Lf('F2'+s)],{});E('DOL',[Rt('F2'+s),[1280,y]],{na:1})});
  lab('DOL','2" DOL42003',676,2016,'start',10);lab('DOL',['2" DOL42004','2" DOL42005'],830,1872,'start',10);lab('DOL',['2" DOL42013','2" DOL42006'],1040,1872,'start',10);
  E('DOL',[[1280,1745],[1280,2010]],{na:1});lab('DOL','2" DOL42007',1274,2040,'end',10.5);
- E('DOL',[[1280,1745],[1650,1745],[1650,360],Lf('CAL',110)],{t:['1 1/2" DOL20006','→ queimador de partida da caldeira'],at:[1656,1660],fs:10.5});
+ E('DOL',[[1280,1745],[1650,1745],[1650,458],[1975,458],Bt('CAL',-105)],{t:['1 1/2" DOL20006','→ queimador de partida da caldeira'],at:[1656,1660],fs:10.5});
  [['EPU75','EPU-75001A','gerador de emergência','1 1/2" DOL42008',1800],['EPU74','EPU-74001','gerador de emergência','2" DOL42014',1870],['EPU73','EPU-73001','gerador de emergência','1 1/2" DOL42012',1940],['INCD','Bombas de incêndio a diesel','46-PR-PID-00001','1 1/2" DOL42010',2010]].forEach(([id,l,s,t,y])=>{N(id,'term',1800,y,l,s,{wh:[250,56]});E('DOL',[[1280,y],Lf(id)],{t,at:[1290,y-7],fs:10.5});dot('DOL',1280,y)});
  // ======================= RENDER (geral ou por área) =======================
  const inN=q=>{for(const n of Object.values(P)){if(q[0]>=n.x-4&&q[0]<=n.x+n.w+4&&q[1]>=n.y-4&&q[1]<=n.y+n.h+4)return n}return null};
  const ANAME=a=>({raw:'Água bruta (TK-40001)',water:'Osmose / ETA',air:'Sala de compressores',cond:'Tanque de condensado',diesel:'Tanque de diesel',cooling:'Torres de resfriamento',steam:'Caldeira',biomass:'Biomassa'})[a]||a;
  const seg=(pts,L)=>{const o=[pts[0]];let acc=0;for(let i=1;i<pts.length;i++){const [x0,y0]=pts[i-1],[x1,y1]=pts[i],d=Math.hypot(x1-x0,y1-y0);if(acc+d>=L){const t=(L-acc)/(d||1);o.push([x0+(x1-x0)*t,y0+(y1-y0)*t]);return o}acc+=d;o.push(pts[i])}return o};
- const vis=new Set(),paths=[],labs=[],used=new Set();
+ const vis=new Set(),paths=[],labs=[],used=new Set();const RX0=/(?:DRENO\d-|PURGA\d-)?[A-Z]{1,4}-?B?\d{5}R?/g;const gshown=new Set();[...ED.flatMap(e=>[].concat(e.o.t||[],e.o.st||[])),...LB.flatMap(l=>l.lines),...Object.values(P).flatMap(n=>[n.l,n.s||'',...(n.ex||[])])].join(' ').replace(RX0,m=>{gshown.add(uNorm(m));return m});
  ED.forEach(e=>{const sN=inN(e.pts[0]),eN=inN(e.pts.at(-1)),sA=sN?sN.ar:e.cur,eA=eN?eN.ar:e.cur;let mode='full',pts=e.pts;
   if(VA){if(sA===VA&&eA===VA)mode='full';else if(sA===VA)mode='out';else if(eA===VA)mode='in';else return}
   if(mode==='out'&&e.o.br)return;
@@ -1681,9 +1705,16 @@ function drawUFlow(boxId,wrapId,legId,VA){const box=$('#'+boxId);if(!box)return;
   const tags=[].concat(e.o.t||[]);
   if(mode==='full'){if(tags.length)labs.push({f:e.f,lines:tags,x:e.o.at[0],y:e.o.at[1],anc:e.o.anc||'start',fs:e.o.fs||11.5})}
   else{const st=e.o.st?[].concat(e.o.st):tags;const p=pts[0],q=pts[1]||p,dx=q[0]-p[0],dy=q[1]-p[1];const L=mode==='out'?[...st,...(st.some(t=>/→/.test(t))?[]:['→ para '+(eN?eN.l:ANAME(eA))])]:['← vem de '+(sN?sN.l:ANAME(sA)),...st];const n=L.length;
-   let x,y,anc;if(Math.abs(dx)>=Math.abs(dy)){anc=dx<0?'end':'start';x=p[0]+(dx<0?-6:6);y=p[1]-8-(n-1)*13}else{anc='end';x=p[0]-8;y=dy>0?p[1]+16:p[1]-10-(n-1)*13}
-   labs.push({f:e.f,lines:L,x,y,anc,fs:10.5})}});
+   const H=(n-1)*13,up=p[1]-8-H,dn=p[1]+18;let C;
+   if(Math.abs(dx)>=Math.abs(dy)){const a0=dx<0?'end':'start',x0=p[0]+(dx<0?-6:6);C=[[x0,up,a0],[x0,dn,a0],[p[0]+(dx<0?6:-6),p[1]-H/2+4,dx<0?'start':'end'],...[1,2,3,4,5,6,7,8].map(k=>[x0,dn+k*16,a0])]}
+   else{const yu=dy>0?p[1]+18:p[1]-10-H,yo=dy>0?p[1]-10-H:p[1]+18;C=[[p[0]-8,yu,'end'],[p[0]+8,yu,'start'],[p[0]-8,yo,'end'],[p[0]+8,yo,'start']]}
+   labs.push({f:e.f,lines:L,x:C[0][0],y:C[0][1],anc:C[0][2],fs:10.5,stub:1,cand:C})}});
  LB.forEach(l=>{if(!VA||l.cur===VA)labs.push(l)});
+ {const box=l=>{const w=Math.max(...l.lines.map(t=>t.length))*l.fs*.56;const xa=l.anc==='end'?l.x-w:l.anc==='middle'?l.x-w/2:l.x;return [xa,l.y-l.fs,xa+w,l.y+(l.lines.length-1)*(l.fs+2.5)+3]};
+  const ov=(a,b)=>a[0]<b[2]&&b[0]<a[2]&&a[1]<b[3]&&b[1]<a[3];const placed=labs.filter(l=>!l.stub).map(box);
+  Object.values(P).filter(n=>!VA||n.ar===VA||vis.has(n.id)).forEach(n=>placed.push([n.x,n.y,n.x+n.w,n.y+n.h]));
+  labs.filter(l=>l.stub).forEach(l=>{let ok=false;for(const c of l.cand){[l.x,l.y,l.anc]=c;if(!placed.some(p=>ov(p,box(l)))){ok=true;break}}
+   if(!ok){[l.x,l.y,l.anc]=l.cand[0];for(let i=0;i<14;i++){if(!placed.some(p=>ov(p,box(l))))break;l.y-=14}}placed.push(box(l))})}
  const dots=DT.filter(d=>!VA||d.cur===VA);
  const nodes=Object.values(P).filter(n=>!VA||n.ar===VA||vis.has(n.id));
  // caixa ocupada
@@ -1701,14 +1732,14 @@ function drawUFlow(boxId,wrapId,legId,VA){const box=$('#'+boxId);if(!box)return;
  let nd='';
  nodes.forEach(q=>{const im=q.img?eqImg(q.img):q.k==='pump'?'eqimg/pump.svg':null;const eq=q.k==='term'?'':(q.eq||q.l);
   const body=q.k==='well'?WELLSVG:im?`<img src="${im}" alt="" loading="lazy">`:q.k==='term'?'':TANKSVG;
-  nd+=`<div class="un u${q.k}${q.a&&q.a!==VA?' ulink':''}" ${q.a&&q.a!==VA?`data-uopen="${q.a}"`:''} ${eq?`data-eq="${esc(eq)}" data-es="${esc(q.s||'')}" data-ex="${esc((q.ex||[]).join('|'))}"`:''} style="left:${q.x-ox}px;top:${q.y-oy}px;width:${q.w}px;height:${q.h}px">${body}<b>${esc(q.l)}</b>${q.s?`<small>${esc(q.s)}</small>`:''}${(q.ex||[]).map(e=>`<span class="ux">${tk(e,'span')}</span>`).join('')}</div>`});
+  nd+=`<div class="un u${q.k}${q.a&&q.a!==VA?' ulink':''}" ${q.a&&q.a!==VA?`data-uopen="${q.a}"`:''} ${eq?`data-eq="${esc(eq)}" data-es="${esc(q.s||'')}" data-ex="${esc((q.ex||[]).join('|'))}"`:''} style="left:${q.x-ox}px;top:${q.y-oy}px;width:${q.w}px;height:${q.h}px">${body}<b>${esc(q.l)}</b>${q.s?`<small>${tk(q.s,'span')}</small>`:''}${(q.ex||[]).map(e=>`<span class="ux">${tk(e,'span')}</span>`).join('')}</div>`});
  // demais linhas
  const fam=k=>{const it=(LIDX[k]||[])[0],r=it&&ITEM[it.id];const fl=r&&r.fl||'';
   if(/^WRW/.test(k))return 'WRW';if(/^WDE/.test(k))return 'WDE';if(/^(WLH|W1)/.test(k))return 'WLH';if(/^WHH/.test(k))return 'WHH';if(/^WDR/.test(k))return 'WDR';if(/^(WEF|B32)/.test(k))return 'WEF';
   if(/^WCH/.test(k))return 'WCH';if(/^CTW|^W/.test(k))return 'CTW';if(/^(AIN|PA)/.test(k))return 'AIN';if(/^DOL|F42/.test(k))return 'DOL';if(/HPS/.test(k))return 'HPS';if(/MPS/.test(k))return 'MPS';if(/^LPS/.test(k))return 'LPS';
   if(/^(LPC|MPC)/.test(k))return k.slice(0,3);return fl==='LPC'?'LPC':'MPC'};
  const FT={WRW:'Água bruta',WDE:'Água desmineralizada',WLH:'Água de baixa dureza',WHH:'Água de alta dureza',WDR:'Água potável · ramais',WEF:'Efluentes e drenos (WEF) → ETE',CTW:'Água de resfriamento · ramais e interligações',WCH:'Água gelada (chillers)',AIN:'Ar comprimido · ramais, drenos dos vasos e ar de processo (PA)',DOL:'Diesel · drenos dos filtros',HPS:'Vapor de alta · purgas e drenos',MPS:'Vapor de média · purgas e drenos',LPS:'Vapor de baixa',MPC:'Condensado de média · caldeira, purgas e drenos',LPC:'Condensado de baixa · ramais, purgas e drenos'};
- const rest={};Object.keys(LIDX).forEach(k=>{if(shown.has(k))return;if(VA&&!(LIDX[k]||[]).some(o=>o.a===VA))return;const f=fam(k);(rest[f]=rest[f]||[]).push(k)});
+ const rest={};Object.keys(LIDX).forEach(k=>{if(shown.has(k)||gshown.has(k))return;if(VA&&!(LIDX[k]||[]).some(o=>o.a===VA))return;const f=fam(k);(rest[f]=rest[f]||[]).push(k)});
  const NC=VA?Math.max(1,Math.min(3,Math.floor((WV-40)/600))):4,BW=(WV-40-(NC-1)*10)/NC;let bx='';
  Object.keys(FT).filter(f=>rest[f]).forEach(f=>{const L=rest[f].sort();used.add(f);
   bx+=`<div class="ubox" style="width:${BW}px;--c:${C(f)}"><h5>${esc(FT[f])} · ${L.length} ${L.length>1?'linhas':'linha'}</h5><div class="uc">${L.map(k=>`<i class="ulk" data-lk="${k}">${esc(uLtag(k))}</i>`).join('')}</div></div>`});
