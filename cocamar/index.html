@@ -456,6 +456,7 @@ function panel(sy){
  var h='<div class="av"><h4 class="ptitle">Avanço da montagem · '+esc(sy)+' '+esc(s.nome)+'</h4>';
  h+='<div class="avtop"><div><b>'+a+'%</b><small>realizado</small></div><div><b>'+(e==null?'–':e+'%')+'</b><small>previsto hoje</small></div><div>'+badge(st)+'<small>'+(s.iso?'marco '+br(s.iso):'sem data no cronograma')+'</small></div></div>'+bar(a);
  h+='<p class="avn">Dê o avanço item por item: cada linha, equipamento, bomba, válvula e instrumento tem as suas etapas. O que você marcar vai para a planilha da obra e aparece para todo mundo; sem rede fica guardado no aparelho e sobe sozinho depois.</p>';
+ h+='<div class="avact" style="margin:4px 0 14px"><button type="button" class="avbtn pri" data-av="pdf" data-sy="'+esc(sy)+'">Exportar PDF · só o '+esc(sy)+'</button><button type="button" class="avbtn" data-av="open">Ver todos os sistemas</button></div>';
  sysSubs(sy).forEach(function(sd){var sb=sd[0],m=subMarco(sy,sd),er=subExp(sy,sd),x=D.sys[sy]&&D.sys[sy][sb]||{},ap=subPct(sy,sb);
   h+='<div class="avsub"><div class="avh"><b>'+esc(sb)+'</b> '+(m?'<small>marco '+br(m)+'</small>':'')+' <span class="avpct">'+ap+'%'+(er==null?'':' <small>(prev. '+er+'%)</small>')+'</span></div>'+bar(ap);
   TIPOS.forEach(function(tp){var l=listOf(sy,sb,tp);if(!l.length)return;var tpct=subPct(sy,sb,tp);
@@ -488,29 +489,45 @@ function csv(){var L=[['Sistema','Nome do sistema','Subsistema','Marco','Tipo','
  return '﻿'+L.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"'}).join(';')}).join('\r\n')}
 function dl(name,mime,text){var b=new Blob([text],{type:mime}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(u);a.remove()},500)}
 
-function report(auto){
- var ids=sysIds(),o=overall(),t=new Date().toLocaleString('pt-BR'),late=[];
- var h='<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório de avanço · Cocamar utilidades</title><style>body{font:14px/1.45 Arial,sans-serif;margin:0;color:#13263b}.w{max-width:1000px;margin:0 auto;padding:24px}h1{margin:0 0 4px;font-size:24px}h2{font-size:17px;margin:22px 0 6px;border-bottom:2px solid #13263b;padding-bottom:3px}table{border-collapse:collapse;width:100%;font-size:12.5px;margin:6px 0}th,td{border:1px solid #cfd8e0;padding:4px 6px;text-align:left;vertical-align:top}th{background:#eef2f5}.b{display:block;background:#e3e8ed;height:9px;border-radius:5px;overflow:hidden}.b i{display:block;height:100%;background:#1f8a4c}.ro{color:#b3261e;font-weight:700}.at{color:#b36a00;font-weight:700}.ok{color:#1f8a4c;font-weight:700}.s0{color:#56687a}.sub{margin:14px 0 2px;font-weight:700;font-size:15px}.tp{margin:8px 0 2px;font-weight:700;color:#d81b60}.pb{margin:0 0 14px}@media print{.pb{display:none}.w{padding:0}.sub{break-after:avoid}}</style></head><body><div class="w"><div class="pb"><button onclick="window.print()">Imprimir / salvar em PDF</button></div>';
- h+='<h1>Relatório de avanço da montagem</h1><div>Comissionamento das utilidades Cocamar (Maringá/PR) · emitido em '+esc(t)+'</div>';
- h+='<h2>Resumo</h2><p><b>Avanço geral: '+o+'%</b> em '+ids.length+' sistemas.</p><table><thead><tr><th>Sistema</th><th>Marco</th><th>Itens</th><th>Realizado</th><th>Previsto hoje</th><th>Situação</th></tr></thead><tbody>';
+function alvoPDF(){
+ /* dentro de um sistema o PDF sai so daquele fluido; no quadro geral sai a obra toda */
+ var a=document.getElementById('avlay'),m=document.getElementById('modal');
+ if(a&&!a.hidden)return'';
+ if(m&&!m.hidden&&window.__cur&&S()[window.__cur])return window.__cur;
+ return''}
+function rotuloPDF(){var b=document.querySelector('#fabs [data-av="pdf"]');if(!b)return;
+ var sy=alvoPDF();b.textContent=sy?('PDF '+sy):'PDF';b.title=sy?('Exportar o avanço do sistema '+sy):'Exportar o avanço de todos os sistemas'}
+(function(){var m=document.getElementById('modal');if(!m||!window.MutationObserver)return;
+ var ob=new MutationObserver(function(){setTimeout(rotuloPDF,0)});
+ ob.observe(m,{attributes:true,attributeFilter:['hidden']});
+ var a=document.getElementById('avlay');if(a)ob.observe(a,{attributes:true,attributeFilter:['hidden']});
+ document.addEventListener('click',function(){setTimeout(rotuloPDF,60)});
+ window.addEventListener('load',rotuloPDF)})();
+function report(auto,only){
+ if(only&&!S()[only])only='';
+ var ids=only?[only]:sysIds(),o=only?sysPct(only):overall(),t=new Date().toLocaleString('pt-BR'),late=[];
+ var TIT=only?('Avanço da montagem · '+only+' · '+S()[only].nome):'Relatório de avanço da montagem';
+ var h='<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>'+esc(TIT)+'</title><style>body{font:14px/1.45 Arial,sans-serif;margin:0;color:#13263b}.w{max-width:1000px;margin:0 auto;padding:24px}h1{margin:0 0 4px;font-size:24px}h2{font-size:17px;margin:22px 0 6px;border-bottom:2px solid #13263b;padding-bottom:3px}table{border-collapse:collapse;width:100%;font-size:12.5px;margin:6px 0}th,td{border:1px solid #cfd8e0;padding:4px 6px;text-align:left;vertical-align:top}th{background:#eef2f5}.b{display:block;background:#e3e8ed;height:9px;border-radius:5px;overflow:hidden}.b i{display:block;height:100%;background:#1f8a4c}.ro{color:#b3261e;font-weight:700}.at{color:#b36a00;font-weight:700}.ok{color:#1f8a4c;font-weight:700}.s0{color:#56687a}.sub{margin:14px 0 2px;font-weight:700;font-size:15px}.tp{margin:8px 0 2px;font-weight:700;color:#d81b60}.pb{margin:0 0 14px}@media print{.pb{display:none}.w{padding:0}.sub{break-after:avoid}}</style></head><body><div class="w"><div class="pb"><button onclick="window.print()">Imprimir / salvar em PDF</button></div>';
+ h+='<h1>'+esc(TIT)+'</h1><div>Comissionamento das utilidades Cocamar (Maringá/PR) · emitido em '+esc(t)+'</div>';
+ h+='<h2>Resumo</h2><p><b>'+(only?'Avanço do sistema '+esc(only)+': ':'Avanço geral: ')+o+'%</b>'+(only?'':' em '+ids.length+' sistemas.')+'</p><table><thead><tr><th>Sistema</th><th>Marco</th><th>Itens</th><th>Realizado</th><th>Previsto hoje</th><th>Situação</th></tr></thead><tbody>';
  ids.forEach(function(sy){var s=S()[sy],a=sysPct(sy),e=sysExp(sy),st=status(a,e);if(st[1]==='ro'||st[1]==='at')late.push([sy,s.nome,a,e,st[0]]);
   h+='<tr><td><b>'+esc(sy)+'</b> '+esc(s.nome)+'</td><td>'+(s.iso?br(s.iso):'–')+'</td><td>'+sysCount(sy)+'</td><td>'+a+'%<span class="b"><i style="width:'+a+'%"></i></span></td><td>'+(e==null?'–':e+'%')+'</td><td class="'+st[1]+'">'+st[0]+'</td></tr>'});
- h+='</tbody></table><h2>Sistemas em atenção ou atrasados</h2>'+(late.length?'<table><thead><tr><th>Sistema</th><th>Realizado</th><th>Previsto</th><th>Situação</th></tr></thead><tbody>'+late.map(function(l){return'<tr><td><b>'+esc(l[0])+'</b> '+esc(l[1])+'</td><td>'+l[2]+'%</td><td>'+l[3]+'%</td><td>'+esc(l[4])+'</td></tr>'}).join('')+'</tbody></table>':'<p>Nenhum sistema em atenção ou atrasado.</p>');
- h+='<h2>Detalhe por sistema, subsistema e item</h2>';
+ h+='</tbody></table>'+(only?'':'<h2>Sistemas em atenção ou atrasados</h2>')+(only?'':late.length?'<table><thead><tr><th>Sistema</th><th>Realizado</th><th>Previsto</th><th>Situação</th></tr></thead><tbody>'+late.map(function(l){return'<tr><td><b>'+esc(l[0])+'</b> '+esc(l[1])+'</td><td>'+l[2]+'%</td><td>'+l[3]+'%</td><td>'+esc(l[4])+'</td></tr>'}).join('')+'</tbody></table>':'<p>Nenhum sistema em atenção ou atrasado.</p>');
+ h+='<h2>'+(only?'Detalhe por subsistema e item':'Detalhe por sistema, subsistema e item')+'</h2>';
  ids.forEach(function(sy){var s=S()[sy];h+='<div class="sub">'+esc(sy)+' · '+esc(s.nome)+' ('+sysPct(sy)+'%)</div>';
   sysSubs(sy).forEach(function(sd){var sb=sd[0],x=D.sys[sy]&&D.sys[sy][sb]||{};h+='<div><b>'+esc(sb)+'</b> · '+subPct(sy,sb)+'%'+(subMarco(sy,sd)?' · marco '+br(subMarco(sy,sd)):'')+(x.o?'<br><i>Obs.: '+esc(x.o)+'</i>':'')+'</div>';
    TIPOS.forEach(function(tp){var l=listOf(sy,sb,tp);if(!l.length)return;h+='<div class="tp">'+TLAB[tp]+' ('+subPct(sy,sb,tp)+'%)</div><table><thead><tr><th style="width:22%">TAG</th><th>Descrição</th><th style="width:7%">Qtd</th><th style="width:20%">Etapa atual</th><th style="width:8%">%</th></tr></thead><tbody>'+l.map(function(it){return'<tr><td>'+esc(it.tag)+'</td><td>'+esc(it.desc)+'</td><td>'+it.q+'</td><td>'+esc(stageName(sy,it))+'</td><td>'+pctItem(sy,it)+'%</td></tr>'}).join('')+'</tbody></table>'})})});
  h+='<p style="color:#56687a;font-size:12px">Previsto = proporção do tempo decorrido nas fases do plano, com janela de 60 dias antes do marco do cronograma Desmet/COCA6 (datas intermediárias indicativas). O avanço de cada item foi informado pelos usuários do painel; as etapas por tipo de item são referência e podem ser ajustadas.</p></div></body></html>';
  if(auto)h+='<script>window.addEventListener("load",function(){setTimeout(function(){window.print()},500)})<\/script>';
  var b=new Blob([h],{type:'text/html'}),u=URL.createObjectURL(b);var w=window.open(u,'_blank');
- if(!w){dl('Relatorio_Avanco_'+stamp()+'.html','text/html',h);toast('O navegador bloqueou a nova aba. O relatório foi baixado: abra o arquivo e use Imprimir.')}}
+ if(!w){dl('Relatorio_Avanco_'+(only?only+'_':'')+stamp()+'.html','text/html',h);toast('O navegador bloqueou a nova aba. O relatório foi baixado: abra o arquivo e use Imprimir.')}}
 
 document.addEventListener('change',function(e){var t=e.target;if(!t.dataset||!t.dataset.av)return;
  if(t.dataset.av==='i'){setRaw(t.dataset.sy,t.dataset.sb,t.dataset.k,+t.value);refresh(t.dataset.sy,true)}
  else if(t.dataset.av==='load'&&t.files&&t.files[0]){var r=new FileReader();r.onload=function(){try{var j=JSON.parse(r.result);if(j&&j.sys){D=j;save();openBoard();if(window.__cur)refresh(window.__cur)}else alert('Arquivo de backup inválido.')}catch(x){alert('Arquivo de backup inválido.')}};r.readAsText(t.files[0])}});
 document.addEventListener('input',function(e){var t=e.target;if(t.dataset&&t.dataset.av==='o'){var sy=t.dataset.sy,sb=t.dataset.sb;D.sys[sy]=D.sys[sy]||{};D.sys[sy][sb]=D.sys[sy][sb]||{i:{},o:'',d:''};D.sys[sy][sb].o=t.value;D.sys[sy][sb].d=today();save();filaObs(sy,sb,t.value)}});
 document.addEventListener('click',function(e){var t=e.target.closest('[data-av]');if(!t)return;var k=t.dataset.av;
- if(k==='open')openBoard();else if(k==='close')closeBoard();else if(k==='rep')report();else if(k==='pdf')report(true);else if(k==='sav')enviar(true);else if(k==='csv')dl('Avanco_Cocamar_'+stamp()+'.csv','text/csv',csv());
+ if(k==='open')openBoard();else if(k==='close')closeBoard();else if(k==='rep')report(false,t.dataset.sy||alvoPDF());else if(k==='pdf')report(true,t.dataset.sy||alvoPDF());else if(k==='sav')enviar(true);else if(k==='csv')dl('Avanco_Cocamar_'+stamp()+'.csv','text/csv',csv());
  else if(k==='bak')baixarBackup();
  else if(k==='tipo'){var sy=t.dataset.sy,sb=t.dataset.sb,tp=t.dataset.tp;listOf(sy,sb,tp).forEach(function(it){var mx=it.cnt?it.q:ST[it.tp].length-1;setRaw(sy,sb,it.key,t.dataset.v==='max'?mx:0)});refresh(sy,true)}});
 document.addEventListener('click',function(e){if(e.target.closest('#avlay [data-open]'))closeBoard()},true);
