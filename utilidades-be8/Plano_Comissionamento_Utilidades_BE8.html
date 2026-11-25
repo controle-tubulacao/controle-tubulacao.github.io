@@ -142,13 +142,14 @@ textarea.groupNote{width:100%;min-height:52px;border:1px solid var(--rule);paddi
 .empty{padding:16px;color:var(--steel)}
 
 /* diagrama de blocos */
-.fw{overflow:auto;border:1px solid var(--rule);background:#fff;margin-top:8px}
+.fw{overflow-x:hidden;overflow-y:visible;border:1px solid var(--rule);background:#fff;margin-top:8px}
 .bfc{position:relative;display:block;padding:0;border:0;background:none}.bfc svg{position:absolute;left:0;top:0}
 .nd{position:absolute;border:2px solid;border-radius:6px;box-sizing:border-box;padding:6px 7px;text-align:center;color:#0d202e;overflow:hidden;font-size:11px}
 .nd .ty{font:600 9.5px var(--bd);color:#5d6b78;letter-spacing:.05em;text-transform:uppercase}
 .nd .tg{display:block;font:700 14px/1.2 var(--hd);margin:2px 0;word-break:break-word}
 .nd .ln{font-size:10px;color:#56687a;word-break:break-all;line-height:1.25}
 .nd.eqn{border-radius:14px}
+.nd.start{box-shadow:0 0 0 3px #2e9b4f}
 .nd.term{background:#e9eef5;border:2px dashed #9aa7b6;display:flex;flex-direction:column;justify-content:center}
 .nd.grp{text-align:left;padding:0}
 .nd.grp .gh{position:absolute;left:0;top:0;padding:6px 8px;bottom:0;overflow:hidden}
@@ -1481,83 +1482,97 @@ const isRack=z=>/^(Pipe|CR0)/.test(z);
 const shortZ=z=>z.replace('Pipe Rack ','PR ').replace('Pipe Way ','PW ').replace(/^Área (\w+) · /,'Área $1 · ');
 function bandR(z){const b=rstate(z+'|b'),e=rstate(z+'|e');return b&&e?2:b?1:0}
 const BRD=[['Sem base','#d32f2f'],['Sem estrutura','#c99a00'],['Apto','#2e9b4f']];
+const ROLE=[[/Poço \d/i,0,'POÇOS ARTESIANOS'],[/^CT-?\d/,1,'TORRES DE RESFRIAMENTO'],[/^K-/,1,'COMPRESSORES'],[/^RESERVATORIO GERADOR/i,9,'CONSUMIDORES · RESERVATÓRIOS DOS GERADORES'],[/^TK-/,2,'ARMAZENAMENTO · TANQUES'],[/^V-/,3,'PULMÕES / VASOS'],[/^P-/,4,'BOMBEAMENTO'],[/^(F ?- ?\d|SKID)/i,5,'FILTRAGEM / SKID'],[/./,6,'OUTROS EQUIPAMENTOS']];
+const PRELINES={raw:{WRW:{after:0,re:/WRW400(0[3-6]|3[0-2])/,lbl:'LINHAS DOS POÇOS ATÉ O TANQUE'}}};
+function eqRole(id){const r=ITEM[id];const t=r.t+' '+(r.itemDescription||'');for(const [re,o,l] of ROLE)if(re.test(re===ROLE[0][0]?t:r.t))return [o,l];return [6,'OUTROS EQUIPAMENTOS']}
 function drawBlocks(id){const a=AREA[id],B=BLK[id]||{};const subs=a.subs.filter(s=>B[s.fl]&&(B[s.fl].lines.length||B[s.fl].eq.length||B[s.fl].ram.length));
  if(!subs.length){$('#pb').innerHTML='<div class="bd"><p class="fnote">Sem linhas nem equipamentos no plano desta área para montar o diagrama.</p></div>';return}
  let fl=BDSUB[id];if(!subs.some(s=>s.fl===fl))fl=BDSUB[id]=subs[0].fl;const S=B[fl],sub=a.subs.find(s=>s.fl===fl);
  const own='Área '+a.code,inn=(DIRIN[id]||[]).includes(fl);
- const items=S.lines.map(o=>({...o,k:'line'})).concat(S.ram.map(o=>({...o,k:'ram'})));
+ let items=S.lines.map(o=>({...o,k:'line'})).concat(S.ram.map(o=>({...o,k:'ram'})));
  items.forEach(o=>{const rt=(o.rt||[]);o.racks=rt.filter(isRack);const ext=rt.filter(z=>!isRack(z)&&!z.startsWith(own)&&!/^Área SG/.test(z));const lr=o.racks.length?o.racks[o.racks.length-1]:'';o.dest=ext.length?ext[ext.length-1]:(lr?(inn?'Vem de além do ':'Continua além do ')+lr:'');if(o.k==='ram')o.dest='1ª válvula (bloqueio) · '+(ext.length?ext[ext.length-1]:lr?'no '+lr:'na área')});
+ const pl=(PRELINES[id]||{})[fl];let pre=[];if(pl){pre=items.filter(o=>o.k==='line'&&pl.re.test(ITEM[o.id]?.t||''));items=items.filter(o=>!pre.includes(o))}
  const direct=items.filter(o=>!o.racks.length),viaR=items.filter(o=>o.racks.length);
- // ordem das faixas: do limite da área para fora
+ // estágios de equipamentos na ordem do processo
+ const eg={};S.eq.forEach(e=>{const [o,l]=eqRole(e);(eg[o]=eg[o]||{o,lbl:l,list:[]}).list.push(e)});
+ const eqSt=Object.values(eg).sort((x,y)=>x.o-y.o).map(g=>({k:'eq',lbl:g.lbl,list:g.list,o:g.o}));
+ const eqMain=eqSt.filter(g=>g.o<9),eqDest=eqSt.filter(g=>g.o>=9);
  const pos={};viaR.forEach(o=>o.racks.forEach((z,i)=>{pos[z]=Math.min(pos[z]??99,i)}));
  let bands=Object.keys(pos).sort((x,y)=>pos[x]-pos[y]||x.localeCompare(y));if(inn)bands.reverse();
  const bi=Object.fromEntries(bands.map((z,i)=>[z,i]));
- // agrupa isométricos com o mesmo caminho
  const G={};viaR.forEach(o=>{const rs=o.racks.slice().sort((x,y)=>bi[x]-bi[y]);const k=bi[rs[0]]+'-'+bi[rs.at(-1)];const g=(G[k]=G[k]||{racks:[],rows:[]});rs.forEach(z=>{if(!g.racks.includes(z))g.racks.push(z)});g.racks.sort((x,y)=>bi[x]-bi[y]);g.rows.push(o)});
- const groups=Object.values(G).sort((x,y)=>bi[x.racks[0]]-bi[y.racks[0]]||(bi[y.racks.at(-1)]-bi[x.racks.at(-1)]));
- groups.forEach(g=>{g.i0=bi[g.racks[0]];g.i1=bi[g.racks.at(-1)];g.dests=[...new Set(g.rows.map(o=>o.dest))]});
- // geometria
- const LW=210,TX=LW-12,CW=240,CG=22,X0=LW+24,RH=64,EW=196,EH=118,IW=178,IH=136,GAP=24;
- let W=Math.max(1120,X0+groups.length*(CW+CG)+20);
+ const groups=Object.values(G);groups.forEach(g=>{g.i0=bi[g.racks[0]];g.i1=bi[g.racks.at(-1)];g.dests=[...new Set(g.rows.map(o=>o.dest))]});
+ groups.sort((x,y)=>x.i0-y.i0||y.i1-x.i1);
+ // empacota grupos que não se sobrepõem na mesma coluna
+ const cols=[];groups.forEach(g=>{let c=cols.find(c=>c.at(-1).i1<g.i0);if(!c){c=[];cols.push(c)}c.push(g)});
+ const LW=210,TX=LW-12,CW=236,CG=34,X0=LW+30,IW=178,IH=136,EW=196,EH=118,GAP=22;
+ let W=Math.max(1180,X0+cols.length*(CW+CG)+10);
  const perRow=(w)=>Math.max(1,Math.floor((W-X0-10)/(w+GAP)));
  const bh=bands.map(()=>96);
  groups.forEach(g=>{const need=80+g.rows.reduce((n,o)=>n+58+(o.k==='ram'?38:0)+((ITEM[o.id]?.t||'').length>26?12:0)+(isoOf(o).length>18?16:0),0);const span=g.i1-g.i0+1;let have=0;for(let i=g.i0;i<=g.i1;i++)have+=bh[i];if(need>have){const add=(need-have)/span;for(let i=g.i0;i<=g.i1;i++)bh[i]+=add}});
- const stEq={k:'eq',lbl:inn?'CHEGADA · '+a.title.toUpperCase():'ORIGEM · '+a.title.toUpperCase(),n:S.eq.length};
- const stIt={k:'it',lbl:'LINHAS DENTRO DA ÁREA '+a.code,n:direct.length};
- const stRk={k:'rk',lbl:'PIPE RACKS / PIPE WAYS',n:groups.length};
- const stTm={k:'tm',lbl:inn?'ORIGENS (OUTRAS ÁREAS)':'SAÍDAS · ATÉ O BLOQUEIO',n:groups.length};
- let stages=[stEq,stIt,stRk,stTm].filter(s=>s.n);if(inn)stages.reverse();
+ const stIt={k:'it',lbl:'LINHAS DENTRO DA ÁREA '+a.code,list:direct},stRk={k:'rk',lbl:'PIPE RACKS / PIPE WAYS'},stTm={k:'tm',lbl:inn?'ORIGENS (OUTRAS ÁREAS)':'SAÍDAS · ATÉ O BLOQUEIO OU ÁREA DE DESTINO'};
+ const stPre=pre.length?{k:'it',lbl:pl.lbl,list:pre}:null;
+ let main=[];eqMain.forEach(g=>{main.push(g);if(stPre&&g.o===pl.after)main.push(stPre)});if(stPre&&!main.includes(stPre))main.unshift(stPre);
+ let stages=inn?[stTm,stRk,stIt,...main,...eqDest]:[...main,stIt,...eqDest,stRk,stTm];
+ stages=stages.filter(st=>st.k==='rk'||st.k==='tm'?groups.length:st.list&&st.list.length);
+ if(stages.length){const f0=stages[0];f0.start=1}
  let y=78,sv='',nd='',zones=[];
  const A=d=>sv+=`<path d="${d}" fill="none" stroke="#22303f" stroke-width="2" marker-end="url(#bah)"/>`,P=d=>sv+=`<path d="${d}" fill="none" stroke="#22303f" stroke-width="2"/>`;
- const busY=[];let colX={},rkTop=0,rkBot=0,termY=0;const gTop={},gBot={},tTop={},tBot={};
- stages.forEach((st,si)=>{const first=si===0;const y0=y;y+=40;
-  if(st.k==='eq'||st.k==='it'){const list=st.k==='eq'?S.eq:direct,w=st.k==='eq'?EW:IW,h=st.k==='eq'?EH:IH,pr=perRow(w);
+ const busY=[];const cx={},gTop=new Map(),gBot=new Map(),gX=new Map();let tTop={},tBot={},rkTop=0,rkBot=0,rkInBus=null,rkOutBus=null;
+ stages.forEach((st,si)=>{const first=si===0;const y0=y;y+=(st.start?54:40);
+  if(st.k==='eq'||st.k==='it'){const list=st.list,isEq=st.k==='eq',w=isEq?EW:IW,h=isEq?EH:IH,pr=perRow(w);
    for(let r=0;r*pr<list.length;r++){const row=list.slice(r*pr,r*pr+pr);const top=y+(first?0:22);
-    row.forEach((o,c)=>{const x=X0+c*(w+GAP);nd+=st.k==='eq'?eqNode(o,x,top,w,h):itNode(o,x,top,w,h);
-     if(first){P(`M${x+w/2},${top+h} V${top+h+16}`)}else A(`M${x+w/2},${top-12} V${top-2}`)});
+    row.forEach((o,c)=>{const x=X0+c*(w+GAP);nd+=isEq?eqNode(o,x,top,w,h,st.start):itNode(o,x,top,w,h);
+     if(first)P(`M${x+w/2},${top+h} V${top+h+16}`);else A(`M${x+w/2},${top-12} V${top-2}`)});
     const lastX=X0+(row.length-1)*(w+GAP)+w/2;
     if(first){P(`M${TX},${top+h+16} H${lastX}`);busY.push(top+h+16)}else{P(`M${TX},${top-12} H${lastX}`);busY.push(top-12)}
     y=top+h+(first?30:14)}}
-  if(st.k==='rk'){const top=y+(stages[si-1]&&stages[si-1].k!=='tm'?22:0);rkTop=top;let yy=top;
-   const by=bh.map(h=>{const r=yy;yy+=h;return r});by.push(yy);rkBot=yy;
+  if(st.k==='rk'){const prev=stages[si-1],next=stages[si+1];const fromBus=prev&&prev.k!=='tm',toBus=next&&next.k!=='tm';
+   const top=y+(fromBus?22:0);rkTop=top;let yy=top;const by=bh.map(h=>{const r=yy;yy+=h;return r});by.push(yy);rkBot=yy;
    bands.forEach((z,i)=>{const r=bandR(z),tint=['#fdecea','#fff6d6','#e6f4e8'][r],brd=['#e8a39b','#e6c86a','#93c79c'][r];
     sv+=`<rect x="${LW+6}" y="${by[i]+3}" width="${W-LW-12}" height="${bh[i]-6}" rx="6" fill="${tint}" stroke="${brd}" stroke-dasharray="5 4"/><line x1="0" x2="${W}" y1="${by[i]}" y2="${by[i]}" stroke="#c6d0db"/>`;
     nd+=`<div class="bandc" style="top:${by[i]}px;height:${bh[i]}px;width:${LW-10}px"><div class="bn">${esc(z)}</div>${rackPills(z)}<div class="bst" style="color:${BRD[r][1]}">${r===2?'✓ Apta p/ receber tubulação':r===1?'Aguardando estrutura':'Aguardando base civil'}</div></div>`});
    sv+=`<rect x="0" y="${top}" width="${LW}" height="${yy-top}" fill="#eef3f9"/>`;
-   groups.forEach((g,c)=>{const x=X0+c*(CW+CG);colX[c]=x+CW/2;const gy=by[g.i0],gh=by[g.i1+1]-by[g.i0];nd+=grpNode(g,x,gy+4,CW,gh-8,by,bands);gTop[c]=gy+4;gBot[c]=gy+gh-4;
-    const prev=stages[si-1];if(prev&&prev.k!=='tm'){A(`M${x+CW/2},${top-12} V${gy+2}`)}
-    const next=stages[si+1];if(next&&next.k!=='tm'){P(`M${x+CW/2},${gy+gh-4} V${yy+16}`)}});
-   const prev=stages[si-1],next=stages[si+1];
-   if(prev&&prev.k!=='tm'){P(`M${TX},${top-12} H${colX[groups.length-1]}`);busY.push(top-12)}
-   if(next&&next.k!=='tm'){P(`M${TX},${yy+16} H${colX[groups.length-1]}`);busY.push(yy+16)}
-   y=yy+(next&&next.k!=='tm'?30:0)}
-  if(st.k==='tm'){const top=y+(inn?0:26);termY=top;const h=Math.max(96,...groups.map(g=>40+g.dests.slice(0,4).reduce((n,d)=>n+16*Math.ceil(shortZ(d).length/30),0)));
-   groups.forEach((g,c)=>{const x=X0+c*(CW+CG)+14,w=CW-28;nd+=`<div class="nd term" style="left:${x}px;top:${top}px;width:${w}px;height:${h}px"><div class="ty">${inn?'Origem':'Saída'}</div>${g.dests.slice(0,4).map(d=>`<div class="tg" style="font-size:12px">${esc(shortZ(d))}</div>`).join('')}${g.dests.length>4?`<div class="ty">+${g.dests.length-4}</div>`:''}</div>`;
-    tTop[c]=top;tBot[c]=top+h});
+   const inY=top-12,outY=yy+16;let maxX=0;
+   cols.forEach((col,c)=>{const x=X0+c*(CW+CG);cx[c]=x+CW/2;
+    col.forEach((g,k)=>{const gy=by[g.i0]+4,gb=by[g.i1+1]-4;gTop.set(g,gy);gBot.set(g,gb);gX.set(g,x);nd+=grpNode(g,x,gy,CW,gb-gy,by,bands);
+     if(fromBus){if(k===0){A(`M${x+CW/2},${inY} V${gy-2}`);maxX=Math.max(maxX,x+CW/2)}else{P(`M${x-14},${inY} V${gy+22}`);A(`M${x-14},${gy+22} H${x-2}`);maxX=Math.max(maxX,x-14)}}
+     if(toBus){if(k===col.length-1){P(`M${x+CW/2},${gb} V${outY}`);maxX=Math.max(maxX,x+CW/2)}else{P(`M${x},${gb-16} H${x-14} V${outY}`);maxX=Math.max(maxX,x-14)}}})});
+   if(fromBus){P(`M${TX},${inY} H${maxX}`);busY.push(inY)}
+   if(toBus){P(`M${TX},${outY} H${maxX}`);busY.push(outY)}
+   y=yy+(toBus?30:0)}
+  if(st.k==='tm'){const top=y+(inn?0:26);const h=Math.max(96,...cols.map(col=>{const d=[...new Set(col.flatMap(g=>g.dests))];return 40+d.slice(0,5).reduce((n,t)=>n+16*Math.ceil(shortZ(t).length/30),0)}));
+   cols.forEach((col,c)=>{const x=X0+c*(CW+CG)+10,w=CW-20;const d=[...new Set(col.flatMap(g=>g.dests))];tTop[c]=top;tBot[c]=top+h;
+    nd+=`<div class="nd term${st.start?' start':''}" style="left:${x}px;top:${top}px;width:${w}px;height:${h}px"><div class="ty">${inn?'Origem':'Saída'}</div>${d.slice(0,5).map(t=>`<div class="tg" style="font-size:12px">${esc(shortZ(t))}</div>`).join('')}${d.length>5?`<div class="ty">+${d.length-5}</div>`:''}</div>`});
    y=top+h+20}
-  zones.push([y0,y,st.lbl]);y+=8});
- const H=y+10;groups.forEach((g,c)=>{if(tTop[c]==null)return;if(inn)A(`M${colX[c]},${tBot[c]} V${gTop[c]-2}`);else A(`M${colX[c]},${gBot[c]} V${tTop[c]-2}`)});
- // linhas verticais de ligação entre etapas (tronco)
+  zones.push([y0,y,st.lbl,st.start]);y+=8});
+ // ligações entre saídas/origens e as colunas de pipe rack
+ cols.forEach((col,c)=>{if(tTop[c]==null)return;const x=X0+c*(CW+CG);
+  col.forEach((g,k)=>{const gt=gTop.get(g),gb=gBot.get(g);
+   if(inn){if(k===0)A(`M${cx[c]},${tBot[c]} V${gt-2}`);else{P(`M${cx[c]+18},${tBot[c]} V${tBot[c]+10} H${x+CW+12} V${gt+22}`);A(`M${x+CW+12},${gt+22} H${x+CW+2}`)}}
+   else{if(k===col.length-1)A(`M${cx[c]},${gb} V${tTop[c]-2}`);else{P(`M${x+CW},${gb-16} H${x+CW+12} V${tTop[c]-12} H${cx[c]+18}`);A(`M${cx[c]+18},${tTop[c]-12} V${tTop[c]-2}`)}}})});
+ const H=y+10;
  if(busY.length>1)P(`M${TX},${Math.min(...busY)} V${Math.max(...busY)}`);
- let bg='';zones.forEach(([y0,y1,l],i)=>{if(i%2)bg+=`<rect x="0" y="${y0}" width="${W}" height="${y1-y0+8}" fill="#f6f8fb"/>`;bg+=`<line x1="0" x2="${W}" y1="${y0}" y2="${y0}" stroke="#c6d0db"/><text x="18" y="${y0+24}" font-size="14" font-weight="800" fill="#e07b00" stroke="#fff" stroke-width="5" paint-order="stroke">${esc(l)}</text>`});
- const svg=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs><marker id="bah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="#22303f"/></marker></defs>${bg.replace(/<text[^]*?<\/text>/g,'')}<text x="18" y="34" font-size="15" font-weight="800" fill="#10263f">${esc((sub.code+' · '+sub.name).toUpperCase())}</text><text x="18" y="54" font-size="12" fill="#56687a">${inn?'Retorno: das outras áreas, pelos pipe racks, até a área '+esc(a.code):'Da área '+esc(a.code)+', pelos pipe racks, até a primeira válvula (bloqueio) ou a área de destino'}</text>${sv}${(bg.match(/<text[^]*?<\/text>/g)||[]).join('')}</svg>`;
- // indicadores
- const ls=items.map(o=>lstate(o.id)),es=S.eq.map(estate),eqp=es.map(s=>s===0?0:s===1?50:100);
+ let bg='',lb='';zones.forEach(([y0,y1,l,stt],i)=>{if(stt)bg+=`<rect x="0" y="${y0}" width="${W}" height="${y1-y0+8}" fill="#e9f6ec"/><rect x="0" y="${y0}" width="6" height="${y1-y0+8}" fill="#2e9b4f"/>`;else if(i%2)bg+=`<rect x="0" y="${y0}" width="${W}" height="${y1-y0+8}" fill="#f6f8fb"/>`;bg+=`<line x1="0" x2="${W}" y1="${y0}" y2="${y0}" stroke="#c6d0db"/>`;
+  if(stt)lb+=`<rect x="16" y="${y0+10}" rx="11" width="196" height="22" fill="#2e9b4f"/><text x="114" y="${y0+25}" text-anchor="middle" font-size="12" font-weight="800" fill="#fff">▶ INÍCIO DO CIRCUITO</text><text x="18" y="${y0+50}" font-size="14" font-weight="800" fill="#1d7a37" stroke="#e9f6ec" stroke-width="5" paint-order="stroke">${esc(l)}</text>`;
+  else lb+=`<text x="18" y="${y0+24}" font-size="14" font-weight="800" fill="#e07b00" stroke="#fff" stroke-width="5" paint-order="stroke">${esc(l)}</text>`});
+ const svg=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs><marker id="bah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="#22303f"/></marker></defs>${bg}<text x="18" y="34" font-size="15" font-weight="800" fill="#10263f">${esc((sub.code+' · '+sub.name).toUpperCase())}</text><text x="18" y="54" font-size="12" fill="#56687a">${esc(flowTxt(stages))}</text>${sv}${lb}</svg>`;
+ const all=items.concat(pre),ls=all.map(o=>lstate(o.id)),es=S.eq.map(estate),eqp=es.map(s=>s===0?0:s===1?50:100);
  const av=Math.round((ls.map(s=>LPC[s]).concat(eqp).reduce((x,y)=>x+y,0))/Math.max(1,ls.length+eqp.length));
  const rp=bands.reduce((n,z)=>n+rstate(z+'|b')+rstate(z+'|e'),0);
  $('#pb').innerHTML=`<div class="bd"><h4 class="ptitle">Diagrama de blocos · ${esc(sub.code)} ${esc(sub.name)}</h4>
  <div class="bdsel">${subs.map(s=>`<button class="chipb" data-bsub="${s.fl}" aria-pressed="${s.fl===fl}"><span class="dot" style="--c:${s.color}"></span>${esc(s.code)} · ${esc(s.name)}</button>`).join('')}</div>
  <div class="bdk"><div><small>Avanço físico do circuito</small><b>${av}%</b></div><div><small>Isométricos / ramais testados</small><b>${ls.filter(s=>s===3).length}/${ls.length}</b></div><div><small>Equip. testados/isolados · bases prontas</small><b>${es.filter(s=>s>=2).length}/${es.length} · ${S.eq.filter(i=>rstate('EQ|'+i)).length}/${S.eq.length}</b></div><div><small>Pipe rack / pipe way (base + estrutura)</small><b>${rp}/${bands.length*2}</b></div></div>
  <div class="bdleg"><b>Isométrico:</b><span><i style="background:#d32f2f"></i>Pendente</span><span><i style="background:#e2b400"></i>Fabricado</span><span><i style="background:#2f6fd6"></i>Montado</span><span><i style="background:#2e9b4f"></i>Testado</span><b>Equipamento:</b><span><i style="background:#d32f2f"></i>Não instalado</span><span><i style="background:#e2b400"></i>Instalado</span><span><i style="background:#2e9b4f"></i>Testado</span><span><i style="background:#8a98a5"></i>Isolado</span><b>Base / estrutura:</b><span><i style="background:#d32f2f"></i>Sem</span><span><i style="background:#2e9b4f"></i>Pronta</span><b>Datas:</b><span>dd/mm no prazo · <span style="color:#2e9b4f">concluído</span> · <span style="color:#d32f2f">atrasado</span></span></div>
- <div class="bdleg"><b>Caminho do isométrico:</b><span>a coluna à direita de cada bloco mostra, faixa a faixa, se o pipe rack por onde ele passa está apto (<b style="color:#2e9b4f">Apto</b> = base + estrutura · <b style="color:#c99a00">Sem estrutura</b> · <b style="color:#d32f2f">Sem base</b>). Base e estrutura se atualizam na coluna da esquerda, na altura de cada faixa.</span></div>
- <p class="fnote">As setas seguem as etapas do circuito. Toque no botão de cada item para avançar a situação e na data para definir o prazo. Isométrico testado conclui o item no Avanço. Os trechos de pipe rack vêm do 3D (por onde a linha passa).</p>
+ <div class="bdleg"><b>Leitura:</b><span>comece pela faixa verde <b style="color:#1d7a37">▶ INÍCIO DO CIRCUITO</b> e siga as setas, etapa por etapa. Nos pipe racks, a coluna à direita de cada bloco mostra se o trecho por onde o isométrico passa está apto (<b style="color:#2e9b4f">Apto</b> = base + estrutura · <b style="color:#c99a00">Sem estrutura</b> · <b style="color:#d32f2f">Sem base</b>).</span></div>
  <div class="fw" id="fw"><div class="bfc" id="fc" style="width:${W}px;height:${H}px">${svg}${nd}</div></div></div>`;
  fitBlocks()}
-function fitBlocks(){const w=$('#fw'),f=$('#fc');if(!w||!f)return;if(w.clientWidth<50){requestAnimationFrame(fitBlocks);return}f.style.zoom=Math.min(1,Math.max(0.8,(w.clientWidth-2)/parseFloat(f.style.width)))}
+function flowTxt(st){return 'Fluxo: '+st.map(s=>s.k==='rk'?'pipe racks':s.k==='tm'?(s.lbl.startsWith('ORIGENS')?'outras áreas':'bloqueio / área de destino'):s.lbl.toLowerCase().replace(/ · .*/,'').replace('linhas dentro da área','linhas da área')).join(' → ')}
+function fitBlocks(){const w=$('#fw'),f=$('#fc');if(!w||!f)return;if(w.clientWidth<50){requestAnimationFrame(fitBlocks);return}f.style.zoom=Math.min(1,(w.clientWidth-2)/parseFloat(f.style.width))}
 addEventListener('resize',()=>{if($('#fc'))fitBlocks()});
 const SBG=['#fbe9e7;border-color:#e57373','#fdf6dd;border-color:#e2b400','#e8f0fd;border-color:#4a7fd6','#e6f5ea;border-color:#2e9b4f','#eceff1;border-color:#90a4ae'];
 function isoOf(o){const r=ITEM[o.id];return (o.iso&&o.iso.length)?o.iso.join(' · '):r.t.replace(/-[0-9A-Z]{2,5}\/[A-Z]-\d\d.*$/,'')}
-function eqNode(id,x,y,w,h){const r=ITEM[id];if(!r)return '';const s=estate(id),b=rstate('EQ|'+id);return `<div class="nd eqn" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;background:${SBG[[0,1,3,4][s]]}"><div class="ty">${esc(itemCategory(r))}</div><div class="tg">${esc(r.t.replace(/\s*-\s*\d\d\??$/,''))}</div><div class="ln">${esc(descOf(r))}</div><div class="pp"><button class="pl c${b?3:0}" data-brack="EQ|${id}">${b?'Base pronta':'Sem base'}</button><button class="pl c${[0,1,3,4][s]}" data-beq="${id}">${EST[s]}</button></div>${fmtD('E|'+id,s>=2)}</div>`}
+function eqNode(id,x,y,w,h,st){const r=ITEM[id];if(!r)return '';const s=estate(id),b=rstate('EQ|'+id);return `<div class="nd eqn${st?' start':''}" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;background:${SBG[[0,1,3,4][s]]}"><div class="ty">${esc(itemCategory(r))}</div><div class="tg">${esc(r.t.replace(/\s*-\s*\d\d\??$/,''))}</div><div class="ln">${esc(descOf(r))}</div><div class="pp"><button class="pl c${b?3:0}" data-brack="EQ|${id}">${b?'Base pronta':'Sem base'}</button><button class="pl c${[0,1,3,4][s]}" data-beq="${id}">${EST[s]}</button></div>${fmtD('E|'+id,s>=2)}</div>`}
 function itNode(o,x,y,w,h){const r=ITEM[o.id];if(!r)return '';const s=lstate(o.id);return `<div class="nd" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;background:${SBG[s]}"><div class="ty">${o.k==='ram'?'Ramal até o bloqueio':'Isométrico'}</div><div class="tg">${esc(isoOf(o))}</div><div class="ln">${esc(r.t)}</div><div class="pp"><button class="pl c${s}" data-bline="${o.id}">${LST[s]}</button>${o.k==='ram'&&o.b?blqBtn(o.b):''}</div>${fmtD('L|'+o.id,s===3)}${o.dest&&o.k!=='ram'?`<div class="ln">→ ${esc(shortZ(o.dest))}</div>`:''}</div>`}
 function blqBtn(id){const r=ITEM[id];if(!r)return '';const s=estate(id);return `<button class="pl c${[0,1,3,4][s]}" data-beq="${id}" title="Primeira válvula (bloqueio)">Bloqueio: ${['não inst.','instalada','testada','isolada'][s]}</button>`}
 function grpNode(g,x,y,w,h,by,bands){const ST=78,done=g.rows.filter(o=>lstate(o.id)===3).length;
