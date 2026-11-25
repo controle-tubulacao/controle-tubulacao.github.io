@@ -1,0 +1,200 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ligar o painel à planilha da obra</title>
+<style>
+:root{--fg:#13263b;--bg:#eef2f5;--surface:#fff;--rule:#d5dce3;--mut:#56687a;--ok:#1f8a4c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+.top{background:var(--fg);color:#fff;padding:10px 0}
+.w{max-width:860px;margin:0 auto;padding:0 18px}
+h1{font-size:25px;margin:22px 0 4px;line-height:1.2}
+.sub{color:var(--mut);margin:0 0 22px}
+h2{font-size:17px;margin:26px 0 6px}
+ol{padding-left:22px}
+li{margin:9px 0}
+code,kbd{background:#e2e8ee;padding:1px 5px;font:600 14px ui-monospace,Menlo,Consolas,monospace}
+.card{background:var(--surface);border:1px solid var(--rule);padding:18px 20px;margin:16px 0}
+.av{border-left:4px solid #b36a00;background:#fff8ec;padding:12px 14px;margin:14px 0}
+textarea{width:100%;height:230px;font:12px/1.45 ui-monospace,Menlo,Consolas,monospace;border:1px solid var(--rule);padding:10px;background:#fbfcfd;color:var(--fg);resize:vertical}
+button{font:700 15px inherit;font-family:inherit;border:1px solid var(--fg);background:var(--fg);color:#fff;padding:10px 16px;cursor:pointer}
+button.sec{background:var(--surface);color:var(--fg)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.ok{color:var(--ok);font-weight:700}
+footer{color:var(--mut);font-size:13.5px;margin:30px 0 40px}
+a{color:#1f5fae}
+@media(prefers-color-scheme:dark){:root{--fg:#e8eef4;--bg:#0f1720;--surface:#17212c;--rule:#2b3845;--mut:#9fb0c0}
+ .top{background:#17212c}code,kbd{background:#223041}.av{background:#2a2213;border-left-color:#d79a2b}
+ textarea{background:#101922}button{background:#e8eef4;color:#0f1720;border-color:#e8eef4}button.sec{background:transparent;color:var(--fg);border-color:var(--rule)}}
+</style></head><body>
+<div class="top"><div class="w"><b>Comissionamento das utilidades Cocamar</b> · MSE / MTPIPING</div></div>
+<div class="w">
+<h1>Ligar o painel à planilha da obra</h1>
+<p class="sub">Depois disto, o avanço deixa de morar no celular de cada um: tudo é gravado numa planilha sua no Google Drive, com histórico de quem lançou o quê e quando. Leva uns cinco minutos e é feito uma vez só.</p>
+
+<div class="card">
+<h2>1. Criar a planilha</h2>
+<ol>
+<li>Abra <a href="https://sheets.new" target="_blank" rel="noopener">sheets.new</a> (entra já numa planilha nova em branco).</li>
+<li>Dê um nome a ela, por exemplo <b>Avanço Cocamar utilidades</b>. Não precisa criar aba nem cabeçalho: o script cria sozinho as abas <b>Estado</b> e <b>Historico</b> no primeiro lançamento.</li>
+</ol>
+
+<h2>2. Colar o script</h2>
+<ol>
+<li>Na planilha, menu <kbd>Extensões</kbd> › <kbd>Apps Script</kbd>.</li>
+<li>Apague o que estiver escrito lá (<code>function myFunction() {}</code>) e cole o código abaixo.</li>
+<li>Na primeira linha do código, <b>troque a senha da obra</b> — é ela que as pessoas vão digitar uma vez em cada aparelho para poder lançar avanço.</li>
+<li>Salve no ícone do disquete.</li>
+</ol>
+<div class="row"><button id="cp" type="button">Copiar o código</button><span id="msg"></span></div>
+<textarea id="src" readonly spellcheck="false">/*****************************************************************
+ * Painel de avanço — Comissionamento das utilidades Cocamar
+ * MSE / MTPIPING (RLF Piping)
+ *
+ * Guarda numa planilha o avanço lançado no painel, venha de que
+ * celular ou computador vier. Duas abas são criadas sozinhas:
+ *   Estado     — a situação atual de cada item (uma linha por item)
+ *   Historico  — todo lançamento já feito, com quem e quando
+ *
+ * Antes de publicar, troque a senha da obra na linha abaixo.
+ *****************************************************************/
+
+var SENHA_DA_OBRA = 'cocamar2026';
+
+var A_EST = 'Estado';
+var A_HIS = 'Historico';
+
+/* ---------- leitura: o painel chama no carregamento ---------- */
+function doGet(e) {
+  var p = (e && e.parameter) || {};
+  return saida({ ok: true, itens: lerEstado(), hora: new Date().toISOString() }, p.callback);
+}
+
+/* ---------- gravação: o painel manda a fila de alterações ---------- */
+function doPost(e) {
+  var p = (e && e.parameter) || {}, b = {};
+  try { b = JSON.parse(e.postData.contents); }
+  catch (x) { return saida({ ok: false, erro: 'json' }, p.callback); }
+  if (String(b.senha || '') !== SENHA_DA_OBRA) return saida({ ok: false, erro: 'senha' }, p.callback);
+  var n = gravar(b.mudancas || [], String(b.nome || '').slice(0, 60) || 'sem nome');
+  return saida({ ok: true, gravados: n, hora: new Date().toISOString() }, p.callback);
+}
+
+function saida(o, cb) {
+  var t = JSON.stringify(o);
+  if (cb) return ContentService.createTextOutput(cb + '(' + t + ')')
+    .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  return ContentService.createTextOutput(t).setMimeType(ContentService.MimeType.JSON);
+}
+
+/* ---------- planilha ---------- */
+function abas() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var e = ss.getSheetByName(A_EST) || ss.insertSheet(A_EST);
+  if (e.getLastRow() === 0) {
+    e.appendRow(['chave', 'Sistema', 'Subsistema', 'Tipo', 'TAG / item', 'Valor', 'Observação', 'Quem', 'Quando']);
+    e.setFrozenRows(1); e.hideColumns(1);
+  }
+  var h = ss.getSheetByName(A_HIS) || ss.insertSheet(A_HIS);
+  if (h.getLastRow() === 0) {
+    h.appendRow(['Quando', 'Quem', 'Sistema', 'Subsistema', 'Tipo', 'TAG / item', 'De', 'Para']);
+    h.setFrozenRows(1);
+  }
+  return { e: e, h: h };
+}
+
+function lerEstado() {
+  var e = abas().e, n = e.getLastRow();
+  if (n < 2) return [];
+  var v = e.getRange(2, 1, n - 1, 9).getValues(), out = [];
+  for (var i = 0; i < v.length; i++) {
+    var c = String(v[i][0]); if (!c) continue;
+    var p = c.split('|');
+    // [sistema, subsistema, chave do item, valor, observação, data]
+    out.push([p[0], p[1], p.slice(2).join('|'), v[i][5], v[i][6], fdata(v[i][8])]);
+  }
+  return out;
+}
+
+function fdata(d) {
+  if (!d) return '';
+  try { return Utilities.formatDate(new Date(d), Session.getScriptTimeZone(), 'yyyy-MM-dd'); }
+  catch (x) { return ''; }
+}
+
+function gravar(ms, quem) {
+  if (!ms.length) return 0;
+  var lock = LockService.getScriptLock();
+  lock.waitLock(25000);
+  try {
+    var A = abas(), e = A.e, n = e.getLastRow(), idx = {}, v = [];
+    if (n > 1) {
+      v = e.getRange(2, 1, n - 1, 9).getValues();
+      for (var i = 0; i < v.length; i++) idx[String(v[i][0])] = i;
+    }
+    var hist = [], agora = new Date();
+    for (var j = 0; j < ms.length; j++) {
+      var m = ms[j], obs = (m.o !== undefined);
+      var chave = m.sy + '|' + m.sb + '|' + (obs ? '__obs' : m.k);
+      var tipo, tag;
+      if (obs) { tipo = 'Observação'; tag = ''; }
+      else { var pk = String(m.k).split('|'); tipo = pk[0] || ''; tag = pk.slice(1).join('|'); }
+      var val = obs ? '' : m.v, txt = obs ? m.o : '';
+      var linha = [chave, m.sy, m.sb, tipo, tag, val, txt, quem, agora];
+      if (idx[chave] !== undefined) {
+        var k = idx[chave];
+        hist.push([agora, quem, m.sy, m.sb, tipo, tag, obs ? v[k][6] : v[k][5], obs ? txt : val]);
+        v[k] = linha;
+      } else {
+        hist.push([agora, quem, m.sy, m.sb, tipo, tag, '', obs ? txt : val]);
+        idx[chave] = v.length; v.push(linha);
+      }
+    }
+    if (v.length) e.getRange(2, 1, v.length, 9).setValues(v);
+    if (hist.length) A.h.getRange(A.h.getLastRow() + 1, 1, hist.length, 8).setValues(hist);
+    return ms.length;
+  } finally { lock.releaseLock(); }
+}
+</textarea>
+
+<h2>3. Publicar</h2>
+<ol>
+<li>Botão <kbd>Implantar</kbd> › <kbd>Nova implantação</kbd>.</li>
+<li>Na engrenagem ao lado de "Selecione o tipo", escolha <b>App da Web</b>.</li>
+<li><b>Executar como:</b> Eu (a sua conta). <b>Quem pode acessar:</b> <b>Qualquer pessoa</b>.</li>
+<li><kbd>Implantar</kbd> › <kbd>Autorizar acesso</kbd> › escolha a sua conta Google.</li>
+<li>Vai aparecer um aviso de "app não verificado": <kbd>Avançado</kbd> › <b>Acessar (não seguro)</b> › <kbd>Permitir</kbd>. É o seu próprio script, acessando a sua própria planilha.</li>
+<li>Copie o <b>URL do app da Web</b>, que termina em <code>/exec</code>.</li>
+</ol>
+
+<div class="av"><b>"Qualquer pessoa" assusta, mas é o certo aqui.</b> Significa que o endereço responde sem exigir conta Google — necessário para o pessoal de campo abrir o painel no celular. Quem não tem o endereço não chega nele, e <b>lançar</b> avanço continua exigindo a senha da obra. Para fechar depois, é só trocar a senha e reimplantar.</div>
+
+<h2>4. Ligar o painel</h2>
+<ol>
+<li>Me mande o endereço terminado em <code>/exec</code>: eu gravo no site e todo mundo passa a usar a planilha sem fazer nada.</li>
+<li>Se quiser testar antes, abra o painel assim, colando o endereço no fim:<br>
+<code>https://controle-tubulacao.github.io/cocamar/?sync=SEU_ENDERECO_EXEC</code><br>
+O painel guarda esse endereço naquele aparelho e já começa a gravar na planilha.</li>
+</ol>
+</div>
+
+<h2>Como fica no dia a dia</h2>
+<ul>
+<li>Na primeira vez que a pessoa lança avanço, o painel pede o <b>nome</b> e a <b>senha da obra</b>. Depois disso não pergunta mais naquele aparelho.</li>
+<li>A etiqueta no canto inferior mostra a situação: <span class="ok">salvo na planilha</span>, <b>x a enviar</b> ou <b>sem conexão</b>.</li>
+<li>Dentro da planta, sem sinal, o lançamento fica guardado no aparelho e sobe sozinho quando a rede voltar — ou na hora em que alguém tocar em <b>Salvar</b>.</li>
+<li>Na aba <b>Historico</b> fica todo lançamento já feito: data e hora, quem lançou, sistema, subsistema, item, de que etapa para qual.</li>
+</ul>
+
+<footer>MTPIPING Soluções e Projetos · painel de comissionamento das utilidades Cocamar (Maringá/PR) — <a href="../">voltar ao painel</a></footer>
+</div>
+<script>
+document.getElementById('cp').addEventListener('click',function(){
+ var t=document.getElementById('src'),m=document.getElementById('msg');
+ t.select();t.setSelectionRange(0,999999);
+ var ok=false;
+ try{ok=document.execCommand('copy')}catch(e){}
+ if(navigator.clipboard){navigator.clipboard.writeText(t.value).then(function(){m.textContent='Código copiado.';m.className='ok'},function(){})}
+ m.textContent=ok?'Código copiado.':'Selecionado — use Ctrl+C (ou Cmd+C).';m.className='ok';
+});
+</script>
+</body></html>

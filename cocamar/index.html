@@ -187,14 +187,17 @@ dd{margin:0;font:700 21px var(--hd);font-variant-numeric:tabular-nums}
 @media(max-width:520px){.avit{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 38px}}
 
 /* barra fixa: avanco, salvar e PDF ao alcance em qualquer ponto da pagina */
-#fabs{position:fixed;right:14px;bottom:14px;z-index:60;display:flex;gap:8px;align-items:center}
+#fabs{position:fixed;right:14px;bottom:14px;z-index:1200;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+#fabs .fb{display:flex;gap:8px}
+#sstat{font:600 12px inherit;font-family:inherit;background:#13263b;color:#fff;padding:3px 9px;letter-spacing:.01em}
+#sstat.ok{background:#1f8a4c}#sstat.pend{background:#b36a00}#sstat.err{background:#b3261e}
 body{padding-bottom:72px}
 #fabs button{font:700 14px inherit;font-family:inherit;border:1px solid #13263b;background:#13263b;color:#fff;padding:11px 15px;cursor:pointer;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.22)}
 #fabs button.sec{background:var(--surface,#fff);color:var(--fg,#13263b);border-color:var(--rule,#9aa8b6)}
 #fabs button:hover{filter:brightness(1.1)}
-#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:70;background:#13263b;color:#fff;padding:11px 16px;font:600 14px inherit;font-family:inherit;max-width:88vw;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:1300;background:#13263b;color:#fff;padding:11px 16px;font:600 14px inherit;font-family:inherit;max-width:88vw;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.3)}
 #toast[hidden]{display:none}
-@media(max-width:520px){#fabs{right:8px;left:8px;bottom:8px;gap:6px;justify-content:flex-end}#fabs button{padding:10px 10px;font-size:13px;flex:1 1 0;min-width:0}}
+@media(max-width:520px){#fabs{right:8px;left:8px;bottom:8px;gap:5px;align-items:flex-end}#fabs .fb{width:100%}#fabs button{padding:10px 10px;font-size:13px;flex:1 1 0;min-width:0}#sstat{font-size:11px}}
 @media print{#fabs,#toast{display:none!important}}
 
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
@@ -427,7 +430,7 @@ var CACHE={};
 function items(sy){if(CACHE[sy])return CACHE[sy];var s=S()[sy],o={},seen={};((s&&s.it)||[]).forEach(function(r){var sb=r[0],tp=r[1],tag=r[2];var k=sb+'|'+tp+'|'+tag;if(seen[k])return;seen[k]=1;
  var cnt=(tp==='Válvula'&&!/\d/.test(tag));(o[sb]=o[sb]||{});(o[sb][tp]=o[sb][tp]||[]).push({sb:sb,tp:tp,tag:tag,desc:r[3]||'',q:Math.max(1,+r[4]||1),cnt:cnt,key:tp+'|'+tag})});CACHE[sy]=o;return o}
 function raw(sy,sb,key){var a=D.sys[sy]&&D.sys[sy][sb];return a&&a.i&&a.i[key]!=null?a.i[key]:0}
-function setRaw(sy,sb,key,v){D.sys[sy]=D.sys[sy]||{};D.sys[sy][sb]=D.sys[sy][sb]||{i:{},o:'',d:''};D.sys[sy][sb].i=D.sys[sy][sb].i||{};D.sys[sy][sb].i[key]=v;D.sys[sy][sb].d=today();save()}
+function setRaw(sy,sb,key,v){D.sys[sy]=D.sys[sy]||{};D.sys[sy][sb]=D.sys[sy][sb]||{i:{},o:'',d:''};D.sys[sy][sb].i=D.sys[sy][sb].i||{};D.sys[sy][sb].i[key]=v;D.sys[sy][sb].d=today();save();fila(sy,sb,key,v)}
 function pctItem(sy,it){var v=raw(sy,it.sb,it.key);if(it.cnt)return Math.round(100*Math.min(v,it.q)/it.q);var a=ST[it.tp];return a[Math.min(v,a.length-1)][1]}
 function stageName(sy,it){var v=raw(sy,it.sb,it.key);if(it.cnt)return Math.min(v,it.q)+' de '+it.q;var a=ST[it.tp];return a[Math.min(v,a.length-1)][0]}
 function avg(arr){if(!arr.length)return 0;var t=0;arr.forEach(function(x){t+=x});return Math.round(t/arr.length)}
@@ -452,7 +455,7 @@ function panel(sy){
  var s=S()[sy];if(!s)return'';var a=sysPct(sy),e=sysExp(sy),st=status(a,e);
  var h='<div class="av"><h4 class="ptitle">Avanço da montagem · '+esc(sy)+' '+esc(s.nome)+'</h4>';
  h+='<div class="avtop"><div><b>'+a+'%</b><small>realizado</small></div><div><b>'+(e==null?'–':e+'%')+'</b><small>previsto hoje</small></div><div>'+badge(st)+'<small>'+(s.iso?'marco '+br(s.iso):'sem data no cronograma')+'</small></div></div>'+bar(a);
- h+='<p class="avn">Dê o avanço item por item: cada linha, equipamento, bomba, válvula e instrumento tem as suas etapas. Os dados ficam salvos neste aparelho; use "Salvar backup" no quadro geral para guardar ou passar para outra pessoa.</p>';
+ h+='<p class="avn">Dê o avanço item por item: cada linha, equipamento, bomba, válvula e instrumento tem as suas etapas. O que você marcar vai para a planilha da obra e aparece para todo mundo; sem rede fica guardado no aparelho e sobe sozinho depois.</p>';
  sysSubs(sy).forEach(function(sd){var sb=sd[0],m=subMarco(sy,sd),er=subExp(sy,sd),x=D.sys[sy]&&D.sys[sy][sb]||{},ap=subPct(sy,sb);
   h+='<div class="avsub"><div class="avh"><b>'+esc(sb)+'</b> '+(m?'<small>marco '+br(m)+'</small>':'')+' <span class="avpct">'+ap+'%'+(er==null?'':' <small>(prev. '+er+'%)</small>')+'</span></div>'+bar(ap);
   TIPOS.forEach(function(tp){var l=listOf(sy,sb,tp);if(!l.length)return;var tpct=subPct(sy,sb,tp);
@@ -472,14 +475,14 @@ function board(){
  ids.forEach(function(sy){var s=S()[sy],a=sysPct(sy),e=sysExp(sy),st=status(a,e);
   h+='<tr><td><button type="button" class="avlink" data-open="'+sy+'" data-tab="av"><b>'+esc(sy)+'</b> '+esc(s.nome)+'</button></td><td>'+(s.iso?br(s.iso):'–')+'</td><td>'+a+'% <small>('+sysCount(sy)+' itens)</small></td><td>'+(e==null?'–':e+'%')+'</td><td>'+badge(st)+'</td>';
   TIPOS.forEach(function(t){h+='<td>'+(sysCount(sy,t)?sysPct(sy,t)+'%':'–')+'</td>'});h+='</tr>'});
- return h+'</tbody></table></div><p class="avn">Os dados ficam salvos só neste navegador. Para juntar o avanço de várias pessoas, cada um salva o backup e o responsável carrega.</p></div>'}
+ return h+'</tbody></table></div><p class="avn" id="avsync">O avanço é gravado na planilha da obra, então não depende de celular nem de navegador. Sem rede, o lançamento fica guardado no aparelho e sobe sozinho quando a conexão voltar.</p></div>'}
 function openBoard(){var el=document.getElementById('avlay');if(!el){el=document.createElement('div');el.id='avlay';document.body.appendChild(el)}el.innerHTML=board();el.hidden=false;document.body.style.overflow='hidden'}
 function closeBoard(){var el=document.getElementById('avlay');if(el)el.hidden=true;document.body.style.overflow=''}
 
 function toast(m){var el=document.getElementById('toast');if(!el){el=document.createElement('div');el.id='toast';document.body.appendChild(el)}
  el.textContent=m;el.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(function(){el.hidden=true},3600)}
-function salvar(){save();dl('Backup_Avanco_Cocamar_'+stamp()+'.json','application/json',JSON.stringify(D));
- toast('Avanço salvo neste aparelho e baixado como arquivo de backup.')}
+function baixarBackup(){save();dl('Backup_Avanco_Cocamar_'+stamp()+'.json','application/json',JSON.stringify(D));
+ toast('Cópia do avanço baixada para este aparelho.')}
 function csv(){var L=[['Sistema','Nome do sistema','Subsistema','Marco','Tipo','TAG / item','Descrição','Qtd','Etapa atual','Avanço %','Atualizado em']];
  sysIds().forEach(function(sy){var s=S()[sy];sysSubs(sy).forEach(function(sd){var sb=sd[0],m=subMarco(sy,sd),x=D.sys[sy]&&D.sys[sy][sb]||{};TIPOS.forEach(function(t){listOf(sy,sb,t).forEach(function(it){L.push([sy,s.nome,sb,m?br(m):'',t,it.tag,it.desc,it.q,stageName(sy,it),pctItem(sy,it),x.d?br(x.d):''])})})})});
  return '﻿'+L.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"'}).join(';')}).join('\r\n')}
@@ -505,14 +508,83 @@ function report(auto){
 document.addEventListener('change',function(e){var t=e.target;if(!t.dataset||!t.dataset.av)return;
  if(t.dataset.av==='i'){setRaw(t.dataset.sy,t.dataset.sb,t.dataset.k,+t.value);refresh(t.dataset.sy,true)}
  else if(t.dataset.av==='load'&&t.files&&t.files[0]){var r=new FileReader();r.onload=function(){try{var j=JSON.parse(r.result);if(j&&j.sys){D=j;save();openBoard();if(window.__cur)refresh(window.__cur)}else alert('Arquivo de backup inválido.')}catch(x){alert('Arquivo de backup inválido.')}};r.readAsText(t.files[0])}});
-document.addEventListener('input',function(e){var t=e.target;if(t.dataset&&t.dataset.av==='o'){var sy=t.dataset.sy,sb=t.dataset.sb;D.sys[sy]=D.sys[sy]||{};D.sys[sy][sb]=D.sys[sy][sb]||{i:{},o:'',d:''};D.sys[sy][sb].o=t.value;D.sys[sy][sb].d=today();save()}});
+document.addEventListener('input',function(e){var t=e.target;if(t.dataset&&t.dataset.av==='o'){var sy=t.dataset.sy,sb=t.dataset.sb;D.sys[sy]=D.sys[sy]||{};D.sys[sy][sb]=D.sys[sy][sb]||{i:{},o:'',d:''};D.sys[sy][sb].o=t.value;D.sys[sy][sb].d=today();save();filaObs(sy,sb,t.value)}});
 document.addEventListener('click',function(e){var t=e.target.closest('[data-av]');if(!t)return;var k=t.dataset.av;
- if(k==='open')openBoard();else if(k==='close')closeBoard();else if(k==='rep')report();else if(k==='pdf')report(true);else if(k==='sav')salvar();else if(k==='csv')dl('Avanco_Cocamar_'+stamp()+'.csv','text/csv',csv());
- else if(k==='bak')salvar();
+ if(k==='open')openBoard();else if(k==='close')closeBoard();else if(k==='rep')report();else if(k==='pdf')report(true);else if(k==='sav')enviar(true);else if(k==='csv')dl('Avanco_Cocamar_'+stamp()+'.csv','text/csv',csv());
+ else if(k==='bak')baixarBackup();
  else if(k==='tipo'){var sy=t.dataset.sy,sb=t.dataset.sb,tp=t.dataset.tp;listOf(sy,sb,tp).forEach(function(it){var mx=it.cnt?it.q:ST[it.tp].length-1;setRaw(sy,sb,it.key,t.dataset.v==='max'?mx:0)});refresh(sy,true)}});
 document.addEventListener('click',function(e){if(e.target.closest('#avlay [data-open]'))closeBoard()},true);
 function refresh(sy,keep){var el=document.getElementById('pav');if(el&&!el.hidden){var op={};el.querySelectorAll('details').forEach(function(d,i){op[i]=d.open});var sc=el.scrollTop,pS=el.closest('.box'),ys=pS?pS.scrollTop:0;el.innerHTML=panel(sy);el.querySelectorAll('details').forEach(function(d,i){if(op[i]!=null)d.open=op[i]});el.scrollTop=sc;var m=document.getElementById('modal');if(m&&keep){m.scrollTop=m.scrollTop}}sum()}
 function sum(){var bs=document.getElementById('avsum');if(bs)bs.textContent=overall()+'%'}
+
+/* ===== gravacao central na planilha da obra (Google Apps Script) =====
+   O avanco continua sendo gravado na hora no proprio aparelho, para funcionar
+   sem rede dentro da planta. Alem disso cada alteracao entra numa fila que sobe
+   para a planilha: e la que mora o historico, nao no celular de ninguem. */
+var SYNC_URL='';   /* endereco /exec do app da planilha; vazio = so neste aparelho */
+var KNOME='cocamar.nome',KSEN='cocamar.senha',KFILA='cocamar.fila',KURL='cocamar.sync';
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);return v}catch(e){return null}}
+function urlSync(){try{var q=new URLSearchParams(location.search).get('sync');if(q)ls(KURL,q)}catch(e){}
+ return ls(KURL)||SYNC_URL}
+function filaLer(){try{return JSON.parse(ls(KFILA)||'[]')}catch(e){return[]}}
+function filaGrav(a){ls(KFILA,JSON.stringify(a.slice(-5000)))}
+function stat(t,c){var el=document.getElementById('sstat');if(el){el.textContent=t;el.className=c||''}}
+function pend(){var n=filaLer().length;if(n)stat(n+' a enviar','pend')}
+function fila(sy,sb,k,v){var f=filaLer();f.push({t:Date.now(),sy:sy,sb:sb,k:k,v:v});filaGrav(f);agenda(1200)}
+function filaObs(sy,sb,txt){var f=filaLer().filter(function(x){return !(x.o!==undefined&&x.sy===sy&&x.sb===sb)});
+ f.push({t:Date.now(),sy:sy,sb:sb,o:txt});filaGrav(f);agenda(3000)}
+var _tm=null;
+function agenda(ms){pend();clearTimeout(_tm);_tm=setTimeout(function(){enviar(false)},ms||1200)}
+function identificar(){
+ var n=prompt('Seu nome (fica registrado em cada lançamento):',ls(KNOME)||'');
+ if(n===null||!n.replace(/\s/g,''))return false;ls(KNOME,n.trim());
+ var s=prompt('Senha da obra para lançar avanço:','');
+ if(s===null||!s)return false;ls(KSEN,s);return true}
+function enviar(aviso){
+ var u=urlSync(),f=filaLer();
+ if(!u){stat('só neste aparelho','');
+  if(aviso)toast('Este painel ainda não está ligado à planilha da obra. Por enquanto o avanço fica neste aparelho — use "Salvar backup" no quadro de Avanço.');return}
+ if(!f.length){stat('em dia','ok');if(aviso)toast('Tudo já está gravado na planilha da obra.');return}
+ if(!ls(KNOME)||!ls(KSEN)){if(!identificar()){pend();return}}
+ var corte=f[f.length-1].t;
+ stat('enviando…','');
+ fetch(u,{method:'POST',body:JSON.stringify({nome:ls(KNOME),senha:ls(KSEN),mudancas:f})})
+ .then(function(r){return r.json()})
+ .then(function(j){
+   if(j&&j.ok){var resto=filaLer().filter(function(x){return x.t>corte});filaGrav(resto);
+    stat(resto.length?resto.length+' a enviar':'salvo na planilha','ok');
+    if(aviso)toast('Avanço gravado na planilha da obra: '+j.gravados+' lançamento(s).')}
+   else if(j&&j.erro==='senha'){ls(KSEN,'');stat('senha incorreta','err');
+    toast('Senha da obra incorreta. Toque em Salvar e informe de novo.')}
+   else{stat(f.length+' a enviar','err');if(aviso)toast('A planilha não aceitou o envio agora. Nada se perdeu: vai de novo mais tarde.')}})
+ .catch(function(){stat(filaLer().length+' a enviar · sem conexão','err');
+   if(aviso)toast('Sem conexão com a planilha. O avanço está guardado neste aparelho e sobe sozinho quando houver rede.')})}
+function puxar(){
+ var u=urlSync();if(!u){stat('só neste aparelho','');return}
+ stat('lendo a planilha…','');
+ fetch(u+(u.indexOf('?')<0?'?':'&')+'acao=ler&t='+Date.now())
+ .then(function(r){return r.json()})
+ .then(function(j){
+   if(!j||!j.ok){stat('não consegui ler a planilha','err');return}
+   var novo={sys:{}};
+   (j.itens||[]).forEach(function(r){var sy=r[0],sb=r[1],k=r[2];if(!sy||!sb)return;
+     novo.sys[sy]=novo.sys[sy]||{};novo.sys[sy][sb]=novo.sys[sy][sb]||{i:{},o:'',d:''};
+     if(k==='__obs')novo.sys[sy][sb].o=r[4]||'';else novo.sys[sy][sb].i[k]=+r[3]||0;
+     if(r[5])novo.sys[sy][sb].d=r[5]});
+   /* o que ainda nao subiu vale por cima do que veio da planilha */
+   filaLer().forEach(function(x){novo.sys[x.sy]=novo.sys[x.sy]||{};
+     novo.sys[x.sy][x.sb]=novo.sys[x.sy][x.sb]||{i:{},o:'',d:''};
+     if(x.o!==undefined)novo.sys[x.sy][x.sb].o=x.o;else novo.sys[x.sy][x.sb].i[x.k]=x.v});
+   D=novo;save();sum();
+   if(window.__cur)refresh(window.__cur);
+   var el=document.getElementById('avlay');if(el&&!el.hidden)openBoard();
+   var q=filaLer().length;stat(q?q+' a enviar':'em dia com a planilha','ok');if(q)enviar(false)})
+ .catch(function(){stat('sem conexão com a planilha','err')})}
+window.addEventListener('online',function(){enviar(false)});
+setInterval(function(){if(filaLer().length)enviar(false)},60000);
+window.addEventListener('load',function(){puxar();pend()});
+window.addEventListener('beforeunload',function(e){if(urlSync()&&filaLer().length){e.preventDefault();e.returnValue=''}});
+
 window.AV={panel:panel,board:openBoard,overall:overall};
 window.addEventListener('load',sum);setTimeout(sum,300);setTimeout(sum,1500);
 })();
@@ -559,8 +631,11 @@ window.stop3d=()=>{run=false};
 if(window.want3d)window.load3d(window.want3d);
 </script>
 <div id="fabs">
+<span id="sstat">só neste aparelho</span>
+<div class="fb">
 <button type="button" data-av="open">Avanço</button>
 <button type="button" class="sec" data-av="sav">Salvar</button>
 <button type="button" class="sec" data-av="pdf">PDF</button>
+</div>
 </div>
 <div id="toast" hidden></div>
