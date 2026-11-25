@@ -143,6 +143,14 @@ textarea.groupNote{width:100%;min-height:52px;border:1px solid var(--rule);paddi
 
 /* diagrama de blocos */
 .pfn .dup{display:flex;flex-direction:column;align-items:flex-start;width:100%}.pfn.peq .dup img{width:62%;max-height:none;height:auto;margin-top:-14px}.pfn.peq .dup img:first-child{margin-top:0}.pfn.peq .dup img:nth-child(2){margin-left:30%}.pfn.peq .dup img:nth-child(3){margin-left:15%}
+.un{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;box-sizing:border-box;padding:3px 4px;background:rgba(255,255,255,.94);border:1px solid #d5dde6;border-radius:8px;overflow:hidden}
+.un img{max-width:100%;min-height:0;flex:1 1 0;object-fit:contain;filter:drop-shadow(0 2px 3px rgba(0,0,0,.16))}.un>svg{flex:0 1 auto;min-height:0;max-height:52%;width:auto}
+.un b{font:800 13px/1.15 var(--hd);color:#0d202e;margin-top:2px}.un small{font-size:10px;color:#4e5f6e;line-height:1.15}.un .ux{font-size:10.5px;font-weight:700;color:#1c4f86;line-height:1.3;white-space:nowrap}
+.un.upump{border-color:#9db8d6}.un.upump b{color:#0b4f9c;font-size:13.5px}.un.uterm{border:2px dashed #9aa7b6;background:#eef3f8;justify-content:center}.un.uterm b{font-size:12px}.un.uterm .ux{color:#33475b}
+.un.ubig,.un.utank,.un.ueq,.un.uvas{border-color:transparent;background:transparent}
+.ubox{position:absolute;border:1.5px solid var(--c);border-left-width:6px;border-radius:8px;background:#fff;padding:6px 8px;box-sizing:border-box}.ubox h5{margin:0 0 5px;font:800 12px var(--hd);color:var(--c)}
+.ubox .uc{display:flex;flex-wrap:wrap;gap:3px}.ubox .uc i{font-style:normal;font-size:10.5px;font-weight:700;border:1px solid #d5dde6;border-radius:4px;padding:1px 4px;color:#22364a;background:#f6f8fb}
+.uzb{display:flex;gap:6px;margin-top:8px}#ufw.uzoom{overflow-x:auto}
 .ulink{cursor:pointer}.ulink:hover b{color:#1f6fd1;text-decoration:underline}
 .pfd{background:linear-gradient(#fff,#f7f9fb)}.pfdhd{display:flex;justify-content:space-between;background:#0d202e;color:#fff;font:600 12px var(--bd);padding:6px 10px;margin-top:6px}
 .pfn{position:absolute;display:flex;flex-direction:column;align-items:center;text-align:center;box-sizing:border-box}
@@ -226,7 +234,7 @@ textarea.groupNote{width:100%;min-height:52px;border:1px solid var(--rule);paddi
 <section class="blk"><div class="wrap"><h2>O que será comissionado</h2><p class="sub">Totais do plano nas oito áreas, por tipo de item. As linhas são contadas por Line Number; válvulas e instrumentos, pelos TAGs do inventário BE8.</p><div class="nums" id="nums"></div></div></section>
 <section class="blk"><div class="wrap"><h2>Avanço da montagem</h2><p class="sub">O avanço é dado item por item na aba Avanço de cada área. Item marcado como Pendente ou Bloqueada entra no Punch list. Os dados ficam salvos neste navegador; use “Salvar backup” para guardar ou passar para outra pessoa.</p>
 <div class="avsec"><div><b id="avsum">0%</b> <small>avanço geral registrado</small></div><div id="avpend"></div><button class="btn pri" id="openPunch2">Abrir Punch list</button><button class="btn" id="exportCsv2">Exportar CSV (Excel)</button></div></div></section>
-<section class="blk" id="ugeral"><div class="wrap"><h2>Fluxo geral das utilidades</h2><p class="sub">Todas as utilidades do Be8 juntas, da fonte ao consumidor, com as imagens dos equipamentos tiradas da maquete 3D. Cada cor é um fluido. Toque num equipamento para abrir o fluxo de processo da área.</p><div class="fw" id="ufw"><div class="bfc pfd" id="ufc"></div></div><div class="bdleg" id="uleg"></div></div></section>
+<section class="blk" id="ugeral"><div class="wrap"><h2>Fluxo geral das utilidades</h2><p class="sub">Todas as utilidades do Be8 juntas, da fonte ao consumidor, com as imagens dos equipamentos tiradas da maquete 3D. Cada cor é um fluido. Cada bomba aparece com o seu TAG e as linhas de sucção e recalque; cada corrente traz o TAG das linhas, e no fim estão todas as demais linhas do plano. Toque num equipamento para abrir o fluxo de processo da área.</p><div class="uzb"><button class="chipb" data-uz="0" aria-pressed="true">Ajustar à tela</button><button class="chipb" data-uz="1" aria-pressed="false">Tamanho real (rolar para os lados)</button></div><div class="fw" id="ufw"><div class="bfc pfd" id="ufc"></div></div><div class="bdleg" id="uleg"></div></div></section>
 <section class="blk" id="areas"><div class="wrap"><h2>Áreas</h2><p class="sub">Toque em uma área para abrir o modelo 3D, o procedimento, o avanço, o fluxograma e os componentes. Dentro de cada área, os subsistemas são separados por fluido.</p>
 <div class="tools"><button class="f" data-f="" aria-pressed="true">Todas</button><span id="ffilters" style="display:contents"></span><input type="search" id="search" placeholder="Buscar área, fluido, TAG ou linha" aria-label="Buscar"></div>
 <div class="grid" id="grid"></div></div></section>
@@ -1515,105 +1523,170 @@ function eqRole(id){const r=ITEM[id];const t=r.t+' '+(r.itemDescription||'');for
 
 
 
-/* ---------- fluxo geral das utilidades ---------- */
-const UN=[
- {id:'PW0',x:85,y:160,l:'P-40001A',s:'Poço 01 · caldeira',well:1,a:'raw',sm:1},
- {id:'PW1',x:85,y:280,l:'P-40001B',s:'Poço 03 · utilidades',well:1,a:'raw',sm:1},
- {id:'PW2',x:85,y:400,l:'P-40001C',s:'Poço 04 · administração',well:1,a:'raw',sm:1},
- {id:'PW3',x:85,y:520,l:'P-40001D',s:'Poço 02 · apoio caminhoneiros',well:1,a:'raw',sm:1},
- {id:'PW4',x:85,y:640,l:'P-40001E',s:'Poço 05 · central de resíduos',well:1,a:'raw',sm:1},
- {id:'PW5',x:85,y:760,l:'P-40001F',s:'Poço 06 · tanques de etanol',well:1,a:'raw',sm:1},
- {id:'PW6',x:85,y:880,l:'P-40001G',s:'Poço 07 · armaz. DDGS',well:1,a:'raw',sm:1},
- {id:'TK40001',x:420,y:200,l:'TK-40001',s:'Água bruta e RTI · 4000 m³',img:'TK-40001',a:'raw'},
- {id:'INC',x:420,y:470,l:'Combate a incêndio',s:'46-PR-PID-00001',t:1},
- {id:'PBR',dup:2,x:720,y:520,l:'P-30004A/B · P-30005A',s:'Bombas de água bruta · clorada 150 m³/h · BD 62,5 m³/h',img:'P-30004A',a:'raw',pc:1},
- {id:'CLO',x:720,y:740,l:'Distribuição de água clorada',s:'30-PR-PID-00005',t:1},
- {id:'ETA',x:720,y:200,l:'ETA FAST / Osmose',s:'PS-40001 · potabilização, osmoses e cloração',img:'OSMOSE',a:'water'},
- {id:'TK30001',x:1010,y:130,l:'TK-30001',s:'Água desmineralizada',img:'TK-30001',a:'water'},
- {id:'TK30003',x:1010,y:360,l:'TK-30003',s:'Água de baixa dureza',img:'TK-30003',a:'water'},
- {id:'TK30002',x:1010,y:590,l:'TK-30002',s:'Água de alta dureza',img:'TK-30002',a:'water'},
- {id:'TK40002',x:1010,y:820,l:'TK-40002',s:'Água potável',img:'TK-40002',a:'water'},
- {id:'P1',dup:2,x:1235,y:130,l:'P-30001A/B',s:'Água desmi · 36,7 m³/h',img:'P-30001A',a:'water',pq:1},
- {id:'P2',dup:2,x:1235,y:360,l:'P-30002A/B',s:'Água de baixa dureza · 127 m³/h',img:'P-30002A',a:'water',pq:1},
- {id:'P3',dup:2,x:1235,y:590,l:'P-30003A/B',s:'Água de alta dureza · 67,3 m³/h',img:'P-30003A',a:'water',pq:1},
- {id:'P4',dup:2,x:1235,y:820,l:'P-40006A/B',s:'Água potável · 38 m³/h',img:'P-40006A',a:'water',pq:1},
- {id:'CAL',x:1500,y:165,l:'Caldeira',s:'HPB · vapor 13 barg · desaerador',img:'CALDEIRA',a:'steam',big:1,s:'HPB · 13 barg · desaerador'},
- {id:'BIO',x:1980,y:90,l:'Armazém de biomassa',s:'combustível da caldeira',t:1,a:'biomass'},
- {id:'PC',dup:2,x:1500,y:392,l:'P-00003A/B',s:'Bombas de condensado · 148 m³/h',img:'P-00003A',a:'cond',pc:1},
- {id:'TK00001',x:1500,y:603,l:'TK-00001',s:'Tanque de condensado geral',img:'TK-00001',a:'cond',tk:1},
- {id:'CT',x:1500,y:830,l:'Torres de resfriamento',s:'CT-31001 / CT-31002',img:'CT-31002',a:'cooling'},
- {id:'PCT',dup:2,x:1500,y:1010,l:'P-1402A–D · P-1412A–C',s:'Bombas das torres · destilaria e fermentação',img:'P-1402A',a:'cooling',pc:1},
- {id:'PROC',x:1980,y:240,l:'Processo Be8',s:'Destilaria · fermentação · cozimento · mash milling · secadores · glúten · DDGS',t:1,tall:1},
- {id:'PRED',x:1980,y:1150,l:'Prédios e vestiários',s:'água potável',t:1},
- {id:'K',x:110,y:1260,l:'Compressores',s:'K-36001A a E · K-36002',img:'K-36001',a:'air'},
- {id:'V36',x:420,y:1260,l:'Vasos pulmão',s:'V-36001 · V-36002 · V-36005',img:'V-36002',a:'air'},
- {id:'CAM',x:110,y:1530,l:'Caminhão-tanque',s:'descarregamento de diesel',t:1,a:'diesel'},
- {id:'TK42001',x:420,y:1500,l:'TK-42001',s:'Tanque de óleo diesel',img:'TK-42001',a:'diesel'},
- {id:'BD',dup:2,x:720,y:1500,l:'P-42003A/B e filtros',s:'bombas de diesel',img:'P-42003A',a:'diesel'},
- {id:'GER',x:1980,y:1600,l:'Geradores de emergência',s:'EPU-73001 · EPU-74001 · EPU-75001A',t:1},
-];
-function drawUtil(){const box=$('#ufc');if(!box)return;const W=2110,H=1720;const P={};
- UN.forEach(n=>{const w=n.pq?200:n.pc?210:n.tk?200:n.sm?150:n.big?260:n.t?(n.tall?220:200):210,h=n.pq?120:n.pc?110:n.tk?170:n.sm?112:n.tall?920:n.big?260:n.t?96:200;const y0=n.tall?n.y-60:n.y-h/2;P[n.id]={x:n.x-w/2,y:y0,w,h,n,cx:n.x,cy:y0+h/2,r:n.x+w/2,l:n.x-w/2,t:y0,b:y0+h}});
- const p=P,C=f=>(FLUIDS[f]||{c:'#888'}).c;
- // [fluido, pontos, rótulo, x,y do rótulo]
- const E=[
-  ['WRW',[[p.PW0.r,160],[245,160]],'6" WRW40003',p.PW0.r-4,150,1],
-  ['WRW',[[p.PW1.r,280],[245,280]],'6" WRW40004',p.PW1.r-4,270,1],
-  ['WRW',[[p.PW2.r,400],[245,400]],'6" WRW40005',p.PW2.r-4,390,1],
-  ['WRW',[[p.PW3.r,520],[245,520]],'6" WRW40006',p.PW3.r-4,510,1],
-  ['WRW',[[p.PW4.r,640],[245,640]],'6" WRW40030',p.PW4.r-4,630,1],
-  ['WRW',[[p.PW5.r,760],[245,760]],'6" WRW40031',p.PW5.r-4,750,1],
-  ['WRW',[[p.PW6.r,880],[245,880]],'6" WRW40032',p.PW6.r-4,870,1],
-  ['WRW',[[245,160],[245,880]],'',0,0,1],
-  ['WRW',[[245,200],[p.TK40001.l,200]],'10" WRW40007',252,190],
-  ['WRW',[[p.TK40001.r,200],[p.ETA.l,200]],'14" WRW40021',p.TK40001.r+6,190],
-  ['WRW',[[570,200],[570,520],[p.PBR.l,520]],'WRW40039 · WRW40043/44',576,440],
-  ['WRW',[[720,p.PBR.b],[720,p.CLO.t]],'6" WRW40046/47',726,(p.PBR.b+p.CLO.t)/2+4],
-  ['WRW',[[420,p.TK40001.b],[420,p.INC.t]],'18" WRW40011',426,(p.TK40001.b+p.INC.t)/2],
-  ['WDE',[[p.ETA.r,170],[850,170],[850,130],[p.TK30001.l,130]],'3" WDE · FAST',900,26],
-  ['WLH',[[p.ETA.r,190],[862,190],[862,360],[p.TK30003.l,360]],'4" WDE · FAST',900,256],
-  ['WHH',[[p.ETA.r,210],[874,210],[874,590],[p.TK30002.l,590]],'4" WRW40024',900,486],
-  ['WDR',[[p.ETA.r,230],[886,230],[886,820],[p.TK40002.l,820]],'1 1/2" WDR30001',900,716],
-  ['WDE',[[p.TK30001.r,130],[p.P1.l,130]],'',0,0],['WLH',[[p.TK30003.r,360],[p.P2.l,360]],'',0,0],['WHH',[[p.TK30002.r,590],[p.P3.l,590]],'',0,0],['WDR',[[p.TK40002.r,820],[p.P4.l,820]],'',0,0],
-  ['WDE',[[p.P1.r,130],[p.CAL.l,130]],'3" WDE30005',p.P1.r-30,104],
-  ['WLH',[[p.P2.r,360],[1352,360],[1352,800],[p.CT.l+20,800]],'8" WLH30001 · 8" WLH30003 · make-up',1346,470,0,'end'],
-  ['WHH',[[p.P3.r,590],[1336,590],[1336,700],[p.PROC.l,700]],'6" WHH30002 · 4" WHH30005',1345,720],
-  ['WDR',[[p.P4.r,820],[1322,820],[1322,1150],[p.PRED.l,1150]],'6" WDR40001 · 4" WDR40002/03/04',1340,1142],
-  ['BIO',[[p.BIO.l,90],[p.CAL.r,90]],'transportador de biomassa',p.CAL.r+8,82],
-  ['MPS',[[p.CAL.r,232],[p.PROC.l,232]],'24" MPS00001 · 16" MPS00002',p.CAL.r+8,222],
-  ['LPS',[[p.CAL.r,256],[1745,256],[1745,300],[p.PROC.l,300]],'30" LPS00010 · redutoras PV',p.CAL.r+8,250],
-  ['LPC',[[p.PROC.l,520],[p.TK00001.r,520]],'LPC00023 · 24 · 05 · 06 · 26',p.TK00001.r+18,512],
-  ['MPC',[[p.PROC.l,568],[p.TK00001.r,568]],'3" MPC00013',p.TK00001.r+18,560],
-  ['LPC',[[1500,p.TK00001.t],[1500,p.PC.b]],'',0,0],
-  ['LPC',[[1500,p.PC.t],[1500,p.CAL.b]],'6" LPC00014 → desaerador',1506,(p.PC.t+p.CAL.b)/2+4],
-  ['CTW',[[1500,p.CT.b],[1500,p.PCT.t]],'30" CTW-14101…14104',1506,(p.CT.b+p.PCT.t)/2+4],
-  ['CTW',[[p.PCT.r,1010],[p.PROC.l,1010]],'30" CTW-14105 · 28" CTW-14413',p.PCT.r+8,1002],
-  ['CTW',[[p.PROC.l,830],[p.CT.r,830]],'30" CTW-14215 · 18" CTW-14315',p.CT.r+8,848],
-  ['AIN',[[p.K.r,1260],[p.V36.l,1260]],'3" AIN36063…67 · 6" AIN36068',p.K.r+6,1252],
-  ['AIN',[[p.V36.r,1260],[p.PROC.l,1260]],'6" AIN36003 · header de ar de instrumentos → processo',p.V36.r+8,1252],
-  ['AIN',[[420,p.V36.b],[420,p.TK42001.t]],'ar comprimido · 42-PR-PID-00001',426,(p.V36.b+p.TK42001.t)/2+4],
-  ['AIN',[[838,1260],[838,p.ETA.b]],'AIN36050/51 · AINB400xx · FAST',844,1180],
-  ['AIN',[[1385,1260],[1385,840],[1418,840]],'1" AIN36022 · ar para as torres',1391,1180],
-  ['AIN',[[1780,1260],[1780,280],[p.CAL.r,280]],'2" AIN36018 · ar para a caldeira',1786,380],
-  ['AIN',[[1780,615],[p.TK00001.r,615]],'AIN36062',1612,632,1],
-  ['DOL',[[p.CAM.r,1530],[p.TK42001.l,1530]],'4" DOL42001',p.CAM.r+6,1522],
-  ['DOL',[[p.TK42001.r,1500],[p.BD.l,1500]],'2" DOL42003',p.TK42001.r+6,1492],
-  ['DOL',[[p.BD.r,1530],[1815,1530],[1815,200],[p.CAL.r,200]],'1 1/2" DOL20006 · queimador de partida da caldeira',p.BD.r+8,1522],
-  ['DOL',[[p.BD.r,1592],[p.GER.l,1592]],'2" DOL42008 · DOL42012 · DOL42014 · geradores',p.BD.r+8,1612],
-  ['DOL',[[600,p.BD.t],[600,470],[p.INC.r,470]],'1 1/2" DOL42010 · incêndio',606,1080],
- ];
- const used=new Set();let sv='';
- E.forEach(([f,pts,lab,lx,ly,na,anc])=>{used.add(f);const c=C(f);let d='M'+pts.map(q=>q.join(',')).join(' L');if(pts.length===3&&pts[2][1]!==pts[1][1]&&pts[2][0]!==pts[1][0])d=`M${pts[0][0]},${pts[0][1]} V${pts[2][1]} H${pts[2][0]}`;
-  sv+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="${f==='AIN'?4:5}" stroke-linejoin="round" opacity=".92" ${na&&!lab?'':`marker-end="url(#um${f})"`}/>${lab?'':'<!--'}<text x="${lx}" y="${ly}" text-anchor="${anc||'start'}" font-size="12" font-weight="700" fill="${c}" stroke="#fff" stroke-width="4" paint-order="stroke">${esc(lab)}</text>${lab?'':'-->'}`});
- const mk=[...used].map(f=>`<marker id="um${f}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0L10,5L0,10z" fill="${C(f)}"/></marker>`).join('');
- const bands=[[60,1100,'ÁGUA · VAPOR · CONDENSADO · RESFRIAMENTO'],[1140,1360,'AR COMPRIMIDO'],[1390,1690,'ÓLEO DIESEL']];
- let bg='';bands.forEach(([a,b,l],i)=>{bg+=`<rect x="0" y="${a}" width="${W}" height="${b-a}" fill="${i%2?'#f6f8fb':'#fbfcfd'}"/><text x="14" y="${a+20}" font-size="12.5" font-weight="800" fill="#e07b00">${l}</text>`});
- let nd='';Object.values(P).forEach(q=>{const n=q.n,im=n.img&&eqImg(n.img);const cls=n.t?'pfn pterm':'pfn peq';
-  nd+=`<div class="${cls}${n.a?' ulink':''}" ${n.a?`data-uopen="${n.a}" title="Abrir o fluxo de processo da área"`:''} style="left:${q.x}px;top:${q.y}px;width:${q.w}px;height:${q.h}px">${im?(n.dup?`<div class="dup">${Array.from({length:n.dup},()=>`<img src="${im}" alt="${esc(n.l)}" loading="lazy">`).join('')}</div>`:`<img src="${im}" alt="${esc(n.l)}" loading="lazy" style="max-height:${n.big?240:140}px">`):n.well?WELLSVG:n.t?AREASVG:TANKSVG}<b>${esc(n.l)}</b><small>${esc(n.s)}</small></div>`});
- box.style.width=W+'px';box.style.height=H+'px';box.innerHTML=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>${mk}</defs>${bg}<text x="14" y="34" font-size="16" font-weight="800" fill="#10263f">FLUXO GERAL DAS UTILIDADES · Be8 PASSO FUNDO</text><text x="${W-14}" y="34" text-anchor="end" font-size="11" fill="#56687a">Imagens: maquete 3D Be8 · sentido do fluxo conforme os P&amp;IDs</text>${sv}</svg>${nd}`;
- $('#uleg').innerHTML=[...used].map(f=>`<span><i style="background:${C(f)}"></i>${esc(f)} · ${esc(FLUIDS[f].n)}</span>`).join('');
- const w=$('#ufw');box.style.zoom=Math.min(1,(w.clientWidth-2)/W)}
-addEventListener('resize',()=>{const w=$('#ufw'),b=$('#ufc');if(w&&b&&b.style.width)b.style.zoom=Math.min(1,(w.clientWidth-2)/parseFloat(b.style.width))});
+/* ---------- fluxo geral das utilidades (todas as bombas e todas as linhas com TAG) ---------- */
+let UZOOM=0;
+function drawUtil(){const box=$('#ufc');if(!box)return;
+ const W=2800,P={},TXT=[];let sv='',nd='';const used=new Set();const C=f=>(FLUIDS[f]||{c:'#888'}).c;
+ const SZ={well:[124,124],pump:[132,128],comp:[124,118],tank:[190,190],eq:[210,176],big:[300,290],vas:[170,150],filt:[130,112],term:[240,60]};
+ const N=(id,k,x,y,l,s,o={})=>{let [w,h]=o.wh||SZ[k];if(k==='term'&&o.ex&&!o.wh)h=Math.max(h,40+o.ex.length*14);P[id]={id,k,x:x-w/2,y:y-h/2,w,h,cx:x,cy:y,l,s,...o};TXT.push(l,s||'',...(o.ex||[]));return P[id]};
+ const Lf=(i,d=0)=>[P[i].x,P[i].cy+d],Rt=(i,d=0)=>[P[i].x+P[i].w,P[i].cy+d],Tp=(i,d=0)=>[P[i].cx+d,P[i].y],Bt=(i,d=0)=>[P[i].cx+d,P[i].y+P[i].h];
+ const lab=(f,lines,x,y,anc='start',fs=11.5)=>{lines=[].concat(lines).filter(Boolean);TXT.push(...lines);const c=C(f);
+  sv+=`<text x="${x}" y="${y}" text-anchor="${anc}" font-size="${fs}" font-weight="700" fill="${c}" stroke="#fff" stroke-width="4" paint-order="stroke">${lines.map((t,i)=>`<tspan x="${x}" dy="${i?fs+2.5:0}">${esc(t)}</tspan>`).join('')}</text>`};
+ const E=(f,pts,o={})=>{used.add(f);const c=C(f);sv+=`<path d="M${pts.map(q=>q.join(',')).join(' L')}" fill="none" stroke="${c}" stroke-width="${o.sw||(f==='AIN'?3.5:4.5)}" stroke-linejoin="round" ${o.dash?'stroke-dasharray="8 5"':''} opacity=".92" ${o.na?'':`marker-end="url(#um${f})"`}/>`;if(o.t)lab(f,o.t,o.at[0],o.at[1],o.anc,o.fs)};
+ const dot=(f,x,y)=>{sv+=`<circle cx="${x}" cy="${y}" r="4.5" fill="${C(f)}"/>`};
+ // ======================= ÁGUA BRUTA =======================
+ const WL=[['P-40001A','Poço 01 · caldeira','WRW40003'],['P-40001B','Poço 03 · utilidades','WRW40004'],['P-40001C','Poço 04 · administração','WRW40005'],['P-40001D','Poço 02 · apoio caminhoneiros','WRW40006'],['P-40001E','Poço 05 · central de resíduos','WRW40030'],['P-40001F','Poço 06 · tanques de etanol','WRW40031'],['P-40001G','Poço 07 · armaz. DDGS','WRW40032']];
+ WL.forEach(([t,s,l],i)=>{const y=180+i*128;N('PW'+i,'well',80,y,t,s,{a:'raw',ex:['rec. 6" '+l]});E('WRW',[Rt('PW'+i),[236,y]],{na:1,t:'6" '+l,at:[Rt('PW'+i)[0]+4,y-7],fs:10.5});dot('WRW',236,y)});
+ E('WRW',[[236,180],[236,180+6*128]],{na:1});
+ N('TK40001','tank',430,440,'TK-40001','Água bruta e RTI · 4000 m³',{img:'TK-40001',a:'raw'});
+ E('WRW',[[236,440],Lf('TK40001')],{t:'10" WRW40007',at:[242,432],fs:10.5});
+ N('CAN','term',430,170,'Canaleta','drenos e ladrão do TK-40001',{wh:[190,54]});
+ E('WRW',[Tp('TK40001'),Bt('CAN')],{t:['16" WRW40008','4" WRW40009','4" WRW40010'],at:[436,226],fs:10.5});
+ N('INC','term',430,740,'Combate a incêndio','46-PR-PID-00001',{wh:[200,60]});
+ E('WRW',[Bt('TK40001',-30),Tp('INC',-30)],{t:'18" WRW40011',at:[394,622],anc:'end',fs:10.5});
+ E('WRW',[Tp('INC',30),Bt('TK40001',30)],{t:['16" WRW40002','retorno'],at:[466,610],fs:10.5});
+ E('WRW',[Rt('TK40001'),[600,440]],{na:1,t:'14" WRW40021',at:[527,432],fs:10.5});
+ E('WRW',[[600,200],[600,800]],{na:1});dot('WRW',600,440);
+ N('ETA','eq',800,200,'ETA FAST / Osmose','PS-40001 · potabilização, osmoses, cloração',{img:'OSMOSE',a:'water'});
+ E('WRW',[[600,200],Lf('ETA')],{t:['2" WRW40034','6" WRW40036','6" WRW40038','6" WRW40042'],at:[606,140],fs:10.5});
+ N('P30005A','pump',760,480,'P-30005A','água bruta → baixa dureza',{a:'raw',ex:['suc. 6" WRW40039','rec. 4" WRW40048']});
+ N('P30004A','pump',760,640,'P-30004A','água clorada · 150 m³/h',{a:'raw',ex:['suc. 10" WRW40043','rec. 6" WRW40046']});
+ N('P30004B','pump',760,800,'P-30004B','água clorada · 150 m³/h',{a:'raw',ex:['suc. 10" WRW40044','rec. 6" WRW40046']});
+ E('WRW',[[600,480],Lf('P30005A')],{t:'6" WRW40039',at:[606,472],fs:10.5});
+ E('WRW',[[600,640],Lf('P30004A')],{t:'10" WRW40043',at:[606,632],fs:10.5});
+ E('WRW',[[600,800],Lf('P30004B')],{t:'10" WRW40044',at:[606,792],fs:10.5});
+ N('CLO','term',760,965,'Água clorada','distribuição geral · 30-PR-PID-00005',{wh:[220,56]});
+ E('WRW',[Rt('P30004A'),[862,640],[862,800]],{na:1});E('WRW',[Rt('P30004B'),[862,800],[862,937]],{});dot('WRW',862,800);
+ lab('WRW',['6" WRW40046','6" WRW40047'],868,868,'start',10.5);
+ // ======================= ETA → TANQUES =======================
+ N('TK30001','tank',1100,180,'TK-30001','Água desmineralizada · 200 m³',{img:'TK-30001',a:'water'});
+ N('TK30003','tank',1100,460,'TK-30003','Água de baixa dureza · 25 m³',{img:'TK-30003',a:'water'});
+ N('TK30002','tank',1100,740,'TK-30002','Água de alta dureza · 100 m³',{img:'TK-30002',a:'water'});
+ N('TK40002','tank',1100,1020,'TK-40002','Água potável · 20 m³',{img:'TK-40002',a:'water'});
+ E('WDE',[Rt('ETA',-20),Lf('TK30001',0)],{t:['3" WDE · FAST','(sem nº no P&ID)'],at:[906,160],fs:10.5});
+ E('WLH',[Rt('ETA',20),[930,220],[930,440],Lf('TK30003',-20)],{t:['4" WDE · FAST','2 1/2" WDE30016'],at:[988,318],fs:10.5});
+ E('WRW',[Rt('P30005A'),Lf('TK30003',20)],{t:['4" WRW40048','6" WRW40023'],at:[830,452],fs:10.5});
+ E('WHH',[Rt('ETA',50),[955,250],[955,740],Lf('TK30002')],{t:['4" WRW40024','2" WEF30002 · rejeito OR02','1 1/2" WEF30001 · rejeito OR01'],at:[988,600],fs:10.5});
+ E('WDR',[Rt('ETA',75),[980,275],[980,1020],Lf('TK40002')],{t:['1 1/2" WDR30001','skid de potabilização'],at:[988,880],fs:10.5});
+ const tkTxt=(id,lines,f)=>lab(f,lines,P[id].cx,P[id].y+P[id].h+13,'middle',10);
+ tkTxt('TK30001',['saída N10: 4" WDE30010 · dreno/ladrão: 10" WDE30007','3" WDE30008 · 2" WDE30013 → FAST'],'WDE');
+ tkTxt('TK30003',['dreno/ladrão: 10" WLH30001 · 2" WLH30002','recirculação: 3" WLH30007'],'WLH');
+ tkTxt('TK30002',['dreno/ladrão: 10" WHH30001 · 2" WHH30002','recirculação: 2" WHH30007'],'WHH');
+ tkTxt('TK40002',['dreno: 2" WDR40029 · recirculação: 1 1/2" WDR40035'],'WDR');
+ // bombas dos tanques (2 por tanque)
+ const PT=[['TK30001','WDE',[['P-30001A','água desmi · 36,7 m³/h',['suc. 4" WDE30014','rec. 3" → WDE30012']],['P-30001B','água desmi · reserva',['suc. 4" WDE30011','rec. 3" → WDE30012']]]],
+  ['TK30003','WLH',[['P-30002A','baixa dureza · 127 m³/h',['suc. 8" WLH30003','rec. 6" → WLH30004']],['P-30002B','baixa dureza · reserva',['suc. 8" WLH30003','rec. 6" → WLH30004']]]],
+  ['TK30002','WHH',[['P-30003A','alta dureza · 67,3 m³/h',['suc. 6" WHH30003','rec. 4" → WHH41004']],['P-30003B','alta dureza · reserva',['suc. 6" WHH30003','rec. 4" → WHH41004']]]],
+  ['TK40002','WDR',[['P-40006A','água potável · 38 m³/h',['suc. 6" WDR40001','rec. 4" WDR40002']],['P-40006B','água potável · reserva',['suc. 6" WDR40001','rec. 4" WDR40003']]]]];
+ PT.forEach(([tk,f,ps])=>{const y=P[tk].cy;ps.forEach(([t,s,ex],j)=>{const id=t.replace('-','');N(id,'pump',1335,y+(j?67:-67),t,s,{a:'water',ex});E(f,[Rt(tk,j?40:-40),[1240,y+(j?40:-40)],[1240,y+(j?67:-67)],Lf(id)]);E(f,[Rt(id),[1440,y+(j?67:-67)],[1440,y]],{na:1})});dot(f,1440,y)});
+ // desmi → caldeira e expedição
+ E('WDE',[[1440,180],[1930,180]],{t:['3" WDE30012 · 3" WDE30002','3" WDE30005 → desaerador'],at:[1610,152],fs:10.5});
+ N('ETN','term',1740,62,'Tanque pulmão · expedição de etanol','20-PR-PID-00002',{wh:[260,50]});
+ E('WDE',[[1600,180],[1600,87]],{t:'2" WDE30001',at:[1606,130],fs:10.5});dot('WDE',1600,180);
+ // baixa dureza
+ E('WLH',[[1440,460],[1600,460],[1600,1290],[1698,1290]],{t:['6" WLH30004','6" WLH30005'],at:[1446,432],fs:10.5});dot('WLH',1600,460);
+ N('MKP','term',1800,575,'Make-up de processo','água de baixa dureza',{ex:['2" W-12202 → TK-1203 (Katzen)','2" W-04742 → TK-400 (Katzen)','2" WLH30006 → planta de CO2']});
+ E('WLH',[[1600,575],Lf('MKP')]);dot('WLH',1600,575);
+ lab('WLH',['6" W-14109 → make-up CT-1401','3" W-14409 → make-up CT-1411'],1606,1196,'start',10.5);
+ // alta dureza
+ N('WHHT','term',1800,740,'Moinho · glúten · chillers','água de alta dureza',{ex:['4" WHH00003 · 1 1/2" WHH00004','1 1/2" WHH08002 → 8000 moinho','4" WHH09003 → 9000 extração de glúten','1" WHH84001 → 8400 chillers']});
+ E('WHH',[[1440,740],Lf('WHHT')],{t:['4" WHH41004','4" WHH30005'],at:[1446,712],fs:10.5});
+ // potável
+ N('PRED','term',1800,1020,'Prédios, vestiários e serviço','água potável · folhas 01 a 03',{wh:[270,130],ex:['3" WDR40005 · 2" WDR40010 · 1 1/2" WDR40011','1" WDR40013 · 2" WDR40012 · 1" WDR40016','1 1/2" WDR14003 · 1 1/2" WDR14004','1" WDR11001 · 1 1/2" WDR31004 (torres)','1 1/2" WDR30018 (osmose)']});
+ E('WDR',[[1440,1020],Lf('PRED')],{t:'4" WDR40004',at:[1446,1012],fs:10.5});
+ // ======================= CALDEIRA · VAPOR · CONDENSADO =======================
+ N('CAL','big',2080,250,'Caldeira','HPB · 13 barg · desaerador',{img:'CALDEIRA',a:'steam'});
+ N('BIO','term',2620,62,'Armazém de biomassa','transportador (sem tubulação)',{wh:[240,50],a:'biomass'});
+ E('BIO',[Lf('BIO'),[2080,62],Tp('CAL')],{t:'biomassa',at:[2300,54],fs:10.5});
+ N('PMPS','term',2620,190,'Processo · vapor de média/alta','destilaria, cozimento, mash milling, secadores',{wh:[300,70]});
+ E('MPS',[Rt('CAL',-40),Lf('PMPS',20)],{t:['14" HPS00001 · 1/2" HPS00002','24" MPS00001 · 16" MPS00002','12" MPS00003 · 12" MPS00004 · 10" MPS00008','10" MPS00013 · 6" MPS00010 · 6" MPS00011','6" MPS00025 · 8" MPS00026 · 4" MPS00014','8" MPS00015 · 8" MPS00005 · 10" MPS00007'],at:[2236,118],fs:10});
+ N('PLPS','term',2620,370,'Processo · vapor de baixa','após as redutoras PV-00001…PV-00009',{wh:[300,70]});
+ E('LPS',[Rt('CAL',90),[2400,340],[2400,370],Lf('PLPS')],{t:['30" LPS00010 · 8" LPS00013 · 10" LPS00015','16" LPS00014 · 18" LPS00017 · 6" LPS00026','8" LPS00030 · 8" LPS00031 · 8" LPS10201','16" LPS-17616 · 24" LPS00020'],at:[2236,280],fs:10});
+ N('TK00001','tank',2080,740,'TK-00001','Tanque de condensado geral',{img:'TK-00001',a:'cond'});
+ N('P00003A','pump',2005,525,'P-00003A','condensado · 148 m³/h',{a:'cond',ex:['suc. 10" LPC00011','rec. 6" LPC00027']});
+ N('P00003B','pump',2155,525,'P-00003B','condensado · reserva',{a:'cond',ex:['suc. 10" LPC00011','rec. 6" LPC00038']});
+ E('LPC',[Tp('TK00001',-75),Bt('P00003A')]);E('LPC',[Tp('TK00001',75),Bt('P00003B')]);lab('LPC','10" LPC00011',2080,612,'middle',10.5);
+ E('LPC',[Tp('P00003A'),Bt('CAL',-75)]);E('LPC',[Tp('P00003B'),Bt('CAL',75)]);lab('LPC','6" LPC00014 → desaerador',2080,432,'middle',10.5);
+ tkTxt('TK00001',['dreno: 4" LPC00010 → local seguro'],'LPC');
+ N('PCOND','term',2620,740,'Processo · retorno de condensado','secadores, glúten, evaporação, DDGS, purgadores',{wh:[300,70]});
+ E('LPC',[Lf('PCOND'),Rt('TK00001')],{t:['3" LPC00023 · 3" LPC00024 · 2" LPC00001','6" LPC00005 · 4" LPC00006 · 4" LPC00026','6" LPC00035 (N10)'],at:[2182,680],fs:10.5});
+ E('MPC',[Lf('PCOND',25),[2280,765],[2280,800],Rt('TK00001',60)],{t:'3" MPC00013',at:[2286,790],fs:10.5});
+ // ======================= AR COMPRIMIDO =======================
+ const KS=[['K-36001A','AIN36063'],['K-36001B','AIN36064'],['K-36001C','AIN36065'],['K-36001D','AIN36066'],['K-36001E','AIN36067']];
+ KS.forEach(([k,l],i)=>{const x=80+i*130;N(k,'comp',x,1270,k,'compressor',{img:'K-36001',a:'air',ex:['rec. 3" '+l]});E('AIN',[Bt(k),[x,1380]],{na:1})});
+ E('AIN',[[80,1380],[735,1380]],{t:'6" AIN36068',at:[650,1372],fs:10.5});
+ N('V36001','vas',820,1380,'V-36001','pulmão · by-pass 6" AIN36069',{img:'V-36001',a:'air'});
+ N('V36002','vas',1040,1380,'V-36002','pulmão · by-pass 6" AIN36002',{img:'V-36002',a:'air'});
+ E('AIN',[Rt('V36001'),Lf('V36002')],{t:['6" AIN36070','6" AIN36001'],at:[910,1352],fs:10.5});
+ E('AIN',[Rt('V36002'),[1200,1380]],{na:1,t:'6" AIN36003',at:[1130,1372],fs:10.5});
+ E('AIN',[[1200,1230],[1200,1610]],{na:1});dot('AIN',1200,1380);
+ E('AIN',[[1200,1230],[1625,1230],[1625,300],Lf('CAL',50)],{t:['6" AIN36010 · 3" AIN36005','2" AIN36018 → caldeira'],at:[1658,1120],fs:10.5});
+ E('AIN',[[1625,812],[1985,812]],{t:'1 1/2" AIN36062',at:[1940,804],fs:10});dot('AIN',1625,812);
+ E('AIN',[[1200,1250],[890,1250],[890,Bt('ETA')[1]]],{t:['2" AIN-B40001 · 2" AIN-B40002 · 1" AIN-B40003','2" AIN-B40004 · 1" AIN-B40005 · 1" AIN-B40006','1" AIN-B40007 · 1" AIN-B40008 → FAST'],at:[896,1200],fs:10});
+ E('AIN',[[1200,1440],[1680,1440],[1680,1370],[1698,1370]],{t:['4" AIN36019 · 1" AIN36022','→ torres de resfriamento'],at:[1206,1432],fs:10.5});
+ N('PAIR','term',1400,1610,'Processo · ar de instrumentos e serviço','36-PR-PID-00002',{wh:[340,112],ex:['6" AIN36030 moagem · 4" AIN36012 etanol','4" AIN36011 · 4" AIN36013 · 4" AIN36028','1" AIN36025 · 2" AIN36026 glúten','2" AIN36052 LB-87010 · 2" AIN36008 oficina','2" AIN36023 área 40 · 2" AIN36021 ETR']});
+ E('AIN',[[1200,1610],[1230,1610]]);
+ N('K36002','comp',300,1560,'K-36002','compressor · grãos (Kepler)',{img:'K-36001',a:'air',ex:['rec. 3" AIN36055']});
+ N('V36005','vas',560,1560,'V-36005','pulmão · grãos',{img:'V-36005',a:'air',wh:[150,140]});
+ E('AIN',[Rt('K36002'),Lf('V36005')],{t:'3" AIN36055',at:[368,1552],fs:10.5});
+ N('REC','term',870,1560,'Recebimento de grãos','skid de carregamento',{ex:['3" AIN36036 · 3" AIN36035']});
+ E('AIN',[Rt('V36005'),Lf('REC')]);
+ E('AIN',[[428,1380],[428,1790]],{dash:1,t:['ar comprimido → TK-42001','(sem nº de linha no P&ID)'],at:[434,1690],fs:10});dot('AIN',428,1380);
+ // ======================= ÁGUA DE RESFRIAMENTO =======================
+ N('CT','eq',1800,1330,'Torres de resfriamento','CT-31001 / CT-31002',{img:'CT-31002',a:'cooling',wh:[200,176]});
+ const CP=[['P-1402A','CTW-14101','CTW-14114','D'],['P-1402B','CTW-14102','CTW-14115','D'],['P-1402C','CTW-14103','CTW-14116','D'],['P-1402D','CTW-14104','CTW-14117','D'],['P-1412A','CTW-14401','CTW-14402','F'],['P-1412B','CTW-14403','CTW-14404','F'],['P-1412C','CTW-14405','CTW-14406','F']];
+ E('CTW',[Rt('CT',-40),[1930,1290],[1930,1230],[2700,1230]],{na:1,t:'sucção das bombas',at:[2200,1222],fs:10.5});
+ CP.forEach(([t,s,d,g],i)=>{const x=1995+i*117,id=t.replace('-','');N(id,'pump',x,1330,t,g==='D'?'destilaria':'fermentação',{a:'cooling',wh:[113,128],ex:['suc. 30" '+s,'rec. 24" '+d]});E('CTW',[[x,1230],Tp(id)]);E(g==='D'?'CTWD':'CTWF',[Bt(id),[x,1440]],{na:1})});
+ E('CTWD',[[1995,1440],[2346,1440]],{na:1});E('CTWF',[[2463,1440],[2697,1440]],{na:1});
+ N('DEST','term',2170,1565,'Destilaria','seção 1400 · Katzen',{wh:[300,60]});
+ N('FERM','term',2580,1565,'Fermentação','seção 1400 · Katzen',{wh:[300,60]});
+ E('CTWD',[[2170,1440],Tp('DEST')],{t:['30" CTW-14105 · 18" CTW-14106','4" CTW-14108 · 3" CTW-B31002'],at:[2176,1470],fs:10.5});
+ E('CTWF',[[2580,1440],Tp('FERM')],{t:['28" CTW-14413 · 2" CTW-14408','8" CTW-14412 · 16" CTW-14901','6" CTW-14902'],at:[2586,1462],fs:10.5});
+ E('CTWDR',[Lf('DEST'),[1800,1565],Bt('CT')],{t:['30" CTW-14215','18" CTW-14315'],at:[1806,1470],fs:10.5});
+ E('CTWFR',[Rt('FERM'),[2770,1565],[2770,1200],[1840,1200],Tp('CT',40)],{t:['retorno: 28" CTW-14411 · 8" CTW-14815 · 6" CTW-14903 · 28" CTW-14914'],at:[2764,1192],anc:'end',fs:10.5});
+ // ======================= ÓLEO DIESEL =======================
+ N('CAM','term',110,1880,'Caminhão-tanque','descarregamento',{wh:[170,60],a:'diesel'});
+ N('P42001','pump',300,1880,'P-42001','descarregamento de diesel',{a:'diesel',ex:['suc. 4" DOL42001','rec. 3" DOL42002']});
+ N('TK42001','tank',540,1880,'TK-42001','Tanque de óleo diesel',{img:'TK-42001',a:'diesel',wh:[180,180]});
+ E('DOL',[Rt('CAM'),Lf('P42001')],{t:'4" DOL42001',at:[198,1872],fs:10});
+ E('DOL',[Rt('P42001'),Lf('TK42001')],{t:'3" DOL42002',at:[369,1872],fs:10});
+ tkTxt('TK42001',['frota: bico 1 1/2" · retorno do queimador: 1" DOL42009'],'DOL');
+ ['A','B'].forEach((s,j)=>{const y=j?1945:1815;N('F1'+s,'filt',760,y,'F-42001'+s,'filtro de diesel',{img:'F-42001'+s,a:'diesel'});N('PD'+s,'pump',970,y,'P-42003'+s,'diesel p/ queimadores',{a:'diesel',ex:['suc. 2" DOL42005','rec. 2" DOL42013']});N('F2'+s,'filt',1170,y,'F-42002'+s,'filtro de diesel',{img:'F-42002'+s,a:'diesel'});
+  E('DOL',[Rt('TK42001'),[670,1880],[670,y],Lf('F1'+s)],{});E('DOL',[Rt('F1'+s),Lf('PD'+s)],{});E('DOL',[Rt('PD'+s),Lf('F2'+s)],{});E('DOL',[Rt('F2'+s),[1280,y]],{na:1})});
+ lab('DOL','2" DOL42003',676,2016,'start',10);lab('DOL',['2" DOL42004','2" DOL42005'],830,1872,'start',10);lab('DOL',['2" DOL42013','2" DOL42006'],1040,1872,'start',10);
+ E('DOL',[[1280,1745],[1280,2010]],{na:1});lab('DOL','2" DOL42007',1274,2040,'end',10.5);
+ E('DOL',[[1280,1745],[1650,1745],[1650,340],Lf('CAL',90)],{t:['1 1/2" DOL20006','→ queimador de partida da caldeira'],at:[1656,1660],fs:10.5});
+ [['EPU75','EPU-75001A','gerador de emergência','1 1/2" DOL42008',1800],['EPU74','EPU-74001','gerador de emergência','2" DOL42014',1870],['EPU73','EPU-73001','gerador de emergência','1 1/2" DOL42012',1940],['INCD','Bombas de incêndio a diesel','46-PR-PID-00001','1 1/2" DOL42010',2010]].forEach(([id,l,s,t,y])=>{N(id,'term',1800,y,l,s,{wh:[250,56]});E('DOL',[[1280,y],Lf(id)],{t,at:[1290,y-7],fs:10.5});dot('DOL',1280,y)});
+ // ======================= DEMAIS LINHAS DO PLANO =======================
+ const norm=s=>s.replace(/^(DRENO\d|PURGA\d)-?/,'$1-').replace(/-/g,'').replace(/^(DRENO\d|PURGA\d)/,'$1-');
+ const shown=new Set();TXT.join(' ').replace(/(?:DRENO\d-|PURGA\d-)?[A-Z]{1,4}-?B?\d{5}R?/g,m=>{shown.add(norm(m))});
+ const fam=k=>{const it=(LIDX[k]||[])[0],r=it&&ITEM[it.id];const fl=r&&r.fl||'';
+  if(/^WRW/.test(k))return 'WRW';if(/^WDE/.test(k))return 'WDE';if(/^(WLH|W1)/.test(k))return 'WLH';if(/^WHH/.test(k))return 'WHH';if(/^WDR/.test(k))return 'WDR';if(/^(WEF|B32)/.test(k))return 'WEF';
+  if(/^WCH/.test(k))return 'WCH';if(/^CTW|^W/.test(k))return 'CTW';if(/^(AIN|PA)/.test(k))return 'AIN';if(/^DOL|F42/.test(k))return 'DOL';if(/HPS/.test(k))return 'HPS';if(/MPS/.test(k))return 'MPS';if(/^LPS/.test(k))return 'LPS';
+  if(/^(LPC|MPC)/.test(k))return k.slice(0,3);return fl==='LPC'?'LPC':'MPC'};
+ const FT={WRW:'Água bruta',WDE:'Água desmineralizada',WLH:'Água de baixa dureza',WHH:'Água de alta dureza',WDR:'Água potável · ramais',WEF:'Efluentes e drenos (WEF) → ETE',CTW:'Água de resfriamento · ramais e interligações',WCH:'Água gelada (chillers)',AIN:'Ar comprimido · ramais, drenos dos vasos e ar de processo (PA)',DOL:'Diesel · drenos dos filtros',HPS:'Vapor de alta · purgas e drenos',MPS:'Vapor de média · purgas e drenos',LPS:'Vapor de baixa',MPC:'Condensado de média · caldeira, purgas e drenos',LPC:'Condensado de baixa · ramais, purgas e drenos'};
+ const rest={};Object.keys(LIDX).forEach(k=>{if(shown.has(k))return;const f=fam(k);(rest[f]=rest[f]||[]).push(k)});
+ const ltag=k=>lineTag(k).replace(/"\s*-/,'" ').replace(/(\d{5}R?)[-\/].*$/,'$1');
+ const bandY=2060,BW=(W-40-30)/4;let bx='';const order=Object.keys(FT).filter(f=>rest[f]);
+ order.forEach(f=>{const L=rest[f].sort();used.add(f);const est=34+21*(Math.ceil(L.reduce((s,k)=>s+ltag(k).length*6.6+14,0)/(BW-20))+0);
+  bx+=`<div class="ubox" data-est="${est}" style="width:${BW}px;--c:${C(f)}"><h5>${esc(FT[f])} · ${L.length} ${L.length>1?'linhas':'linha'}</h5><div class="uc">${L.map(k=>`<i title="${esc((ITEM[(LIDX[k][0]||{}).id]||{}).s||'')}">${esc(ltag(k))}</i>`).join('')}</div></div>`});
+ let H=bandY+900;
+ const mk=Object.keys(FLUIDS).map(f=>`<marker id="um${f}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0L10,5L0,10z" fill="${C(f)}"/></marker>`).join('');
+ const bands=[[40,1150,'ÁGUA BRUTA · TRATAMENTO · CALDEIRA E CONDENSADO'],[1160,1700,'AR COMPRIMIDO (esquerda) · ÁGUA DE RESFRIAMENTO (direita)'],[1710,2050,'ÓLEO DIESEL'],[bandY,H,'DEMAIS LINHAS DO PLANO (ramais, purgas, drenos e interligações) · cada etiqueta é uma linha com isométrico ou planta']];
+ let bg='';bands.forEach(([a,b,l],i)=>{bg+=`<rect ${i===3?'id="ulast"':''} x="0" y="${a}" width="${W}" height="${b-a}" fill="${i%2?'#f6f8fb':'#fbfcfd'}"/><text x="14" y="${a+18}" font-size="12.5" font-weight="800" fill="#e07b00">${l}</text>`});
+ Object.values(P).forEach(q=>{const im=q.img?eqImg(q.img):q.k==='pump'?'eqimg/pump.svg':null;
+  const body=q.k==='well'?WELLSVG:im?`<img src="${im}" alt="" loading="lazy">`:q.k==='term'?'':TANKSVG;
+  nd+=`<div class="un u${q.k}${q.a?' ulink':''}" ${q.a?`data-uopen="${q.a}" title="Abrir o fluxo de processo da área"`:''} style="left:${q.x}px;top:${q.y}px;width:${q.w}px;height:${q.h}px">${body}<b>${esc(q.l)}</b>${q.s?`<small>${esc(q.s)}</small>`:''}${(q.ex||[]).map(e=>`<span class="ux">${esc(e)}</span>`).join('')}</div>`});
+ const nP=Object.values(P).filter(q=>q.k==='pump'||q.k==='well').length,nL=Object.keys(LIDX).length;
+ box.style.width=W+'px';box.style.height=H+'px';
+ box.innerHTML=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>${mk}</defs>${bg}<text x="${W-14}" y="22" text-anchor="end" font-size="11" fill="#56687a">Imagens: maquete 3D Be8 · sentido do fluxo e TAGs conforme os P&amp;IDs e o plano de montagem · ${nP} bombas · ${nL} linhas</text>${sv}</svg>${nd}${bx}`;
+ box.style.zoom=1;const cols=[0,1,2,3].map(()=>bandY+30);box.querySelectorAll('.ubox').forEach(el=>{const c=cols.indexOf(Math.min(...cols));el.style.left=(20+c*(BW+10))+'px';el.style.top=cols[c]+'px';cols[c]+=(el.offsetHeight||+el.dataset.est)+12});
+ H=Math.max(...cols)+20;box.style.height=H+'px';const sg=box.querySelector('svg');sg.setAttribute('height',H);sg.setAttribute('viewBox',`0 0 ${W} ${H}`);const lr=sg.querySelector('#ulast');if(lr)lr.setAttribute('height',H-bandY);
+ $('#uleg').innerHTML=[...used].filter(f=>FLUIDS[f]).map(f=>`<span><i style="background:${C(f)}"></i>${esc(f)} · ${esc(FLUIDS[f].n)}</span>`).join('');
+ uFit()}
+function uFit(){const w=$('#ufw'),b=$('#ufc');if(!w||!b||!b.style.width)return;w.classList.toggle('uzoom',UZOOM===1);b.style.zoom=UZOOM===1?1:Math.min(1,(w.clientWidth-2)/parseFloat(b.style.width));document.querySelectorAll('[data-uz]').forEach(x=>x.setAttribute('aria-pressed',String(+x.dataset.uz===UZOOM)))}
+addEventListener('resize',uFit);
+document.addEventListener('click',e=>{const z=e.target.closest('[data-uz]');if(z){UZOOM=+z.dataset.uz;uFit()}});
 document.addEventListener('click',e=>{const u=e.target.closest('[data-uopen]');if(u){const a=u.dataset.uopen;openArea(a,(FLOWSPEC[a]?'pfd':'m3d'))}});
 /* ---------- fluxo de processo com imagens ---------- */
 const WELLSVG=`<svg viewBox="0 0 90 120" width="78" height="104"><defs><linearGradient id="wg" x1="0" x2="1"><stop offset="0" stop-color="#8d969f"/><stop offset=".45" stop-color="#e9edf0"/><stop offset="1" stop-color="#7b848d"/></linearGradient></defs><rect x="8" y="58" width="74" height="10" fill="#9b7b52"/><rect x="10" y="68" width="70" height="50" fill="#c9a874" opacity=".55"/><rect x="38" y="6" width="14" height="96" rx="3" fill="url(#wg)" stroke="#5f6870"/><rect x="34" y="88" width="22" height="26" rx="4" fill="#2d63b0" stroke="#1d3f73"/><rect x="30" y="14" width="30" height="16" rx="3" fill="#2d63b0" stroke="#1d3f73"/><path d="M52 22 H86" stroke="#1f6fd1" stroke-width="5"/></svg>`;
