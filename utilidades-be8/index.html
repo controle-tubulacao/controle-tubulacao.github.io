@@ -154,7 +154,12 @@ textarea.groupNote{width:100%;min-height:52px;border:1px solid var(--rule);paddi
 #utip h6{margin:0 0 2px;font:800 13.5px var(--hd);color:#0b4f9c}#utip .uts{color:#56687a;font-size:11.5px;line-height:1.3}#utip .utd{margin-top:5px;font-size:11.5px;line-height:1.35}
 #utip .uth{margin-top:7px;font-weight:800;font-size:11.5px;color:#e07b00;text-transform:uppercase;letter-spacing:.02em}#utip ul{margin:3px 0 0;padding:0;list-style:none}#utip li{padding:2px 0;border-top:1px dotted #e1e7ee;line-height:1.3}#utip li b{color:#10263f}#utip li i{display:block;font-style:normal;font-size:10px;color:#8a98a6}#utip .utn{margin-top:6px;font-style:italic;color:#8a98a6}
 .ulk{cursor:help}tspan.ulk:hover{text-decoration:underline}span.ulk:hover,i.ulk:hover{text-decoration:underline;color:#e07b00}.un[data-eq]{cursor:help}.un[data-eq]:hover{box-shadow:0 0 0 2px #e07b00}
-.uzb{display:flex;gap:6px;margin-top:8px}#ufw.uzoom{overflow-x:auto}
+.sbm{background:#f4f8fc;border:1px solid #d5e1ee;border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.5;color:#22364a;margin:6px 0 10px}.sbtag{font:800 10.5px var(--hd);background:#e07b00;color:#fff;border-radius:4px;padding:2px 6px;vertical-align:middle}
+.sbt{overflow-x:auto;border:1px solid var(--rule);border-radius:8px}.sbt table{border-collapse:collapse;width:100%;min-width:1500px;font-size:12px}.sbt th{background:#10263f;color:#fff;text-align:left;padding:7px 8px;font-weight:700;position:sticky;top:0}.sbt td{border-top:1px solid #e1e7ee;padding:7px 8px;vertical-align:top;line-height:1.4}.sbt tr:nth-child(even) td{background:#fafbfd}
+.sbt td small{display:inline-block;min-width:38px;font-weight:800;color:#56687a;font-size:10px;text-transform:uppercase}.sbc{display:inline-block;color:#fff;font:800 11px var(--hd);border-radius:4px;padding:2px 6px;margin-right:6px;margin-bottom:3px}
+.sbt .uc{display:flex;flex-wrap:wrap;gap:3px}.sbt .uc i{font-style:normal;font-size:10.5px;font-weight:700;border:1px solid #d5dde6;border-radius:4px;padding:1px 4px;background:#f6f8fb;color:#22364a}.sbt .uc i.sbe{background:#e8f1fb;border-color:#9db8d6;color:#0b4f9c}.sbt .uc i.sbi{border-radius:9px;background:#fff7e6;border-color:#f0c070}.sbt .uc i.sbv{background:#eef7ee;border-color:#9fcca2}
+.sbp{min-width:70px}.sbbar{height:6px;background:#e5eaf0;border-radius:3px;margin-top:3px}.sbbar i{display:block;height:100%;background:#2e9b4f;border-radius:3px}
+.ubdg{position:absolute;right:4px;top:4px;color:#fff;font:800 10.5px var(--hd);border-radius:4px;padding:1px 5px;z-index:2}.uzb{display:flex;gap:6px;margin-top:8px}#ufw.uzoom{overflow-x:auto}
 .ulink{cursor:pointer}.ulink:hover b{color:#1f6fd1;text-decoration:underline}
 .pfd{background:linear-gradient(#fff,#f7f9fb)}.pfdhd{display:flex;justify-content:space-between;background:#0d202e;color:#fff;font:600 12px var(--bd);padding:6px 10px;margin-top:6px}
 .pfn{position:absolute;display:flex;flex-direction:column;align-items:center;text-align:center;box-sizing:border-box}
@@ -1727,7 +1732,7 @@ function drawUFlow(boxId,wrapId,legId,VA){const box=$('#'+boxId);if(!box)return;
  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;const bb=(a,b,c,d)=>{x0=Math.min(x0,a);y0=Math.min(y0,b);x1=Math.max(x1,c);y1=Math.max(y1,d)};
  nodes.forEach(n=>bb(n.x,n.y,n.x+n.w,n.y+n.h));paths.forEach(p=>p.pts.forEach(q=>bb(q[0],q[1],q[0],q[1])));
  labs.forEach(l=>{const w=Math.max(...l.lines.map(t=>t.length))*l.fs*.56;const xa=l.anc==='end'?l.x-w:l.anc==='middle'?l.x-w/2:l.x;bb(xa,l.y-l.fs,xa+w,l.y+(l.lines.length-1)*(l.fs+2.5)+3)});
- const ox=VA?x0-30:0,oy=VA?y0-56:0,WV=VA?Math.max(900,x1-x0+60):W,bandY=VA?(y1-oy)+40:2060;
+ const ox=VA?x0-30:0,oy=VA?y0-56-(USUB[VA]&&UZONE?34:0):0,WV=VA?Math.max(900,x1-x0+60):W,bandY=VA?(y1-oy)+40:2060;
  // TAGs das linhas: cada TAG vira um alvo de mouse
  const shown=new Set();const RX=/(?:DRENO\d-|PURGA\d-)?[A-Z]{1,4}-?B?\d{5}R?/g;
  const tk=(t,tagName)=>esc(t).replace(RX,m=>{const k=uNorm(m);shown.add(k);return `<${tagName} class="ulk" data-lk="${k}">${m}</${tagName}>`});
@@ -1736,9 +1741,10 @@ function drawUFlow(boxId,wrapId,legId,VA){const box=$('#'+boxId);if(!box)return;
  dots.forEach(d=>{sv+=`<circle cx="${d.x}" cy="${d.y}" r="4.5" fill="${C(d.f)}"/>`});
  labs.forEach(l=>{sv+=`<text x="${l.x}" y="${l.y}" text-anchor="${l.anc}" font-size="${l.fs}" font-weight="700" fill="${C(l.f)}" stroke="#fff" stroke-width="4" paint-order="stroke">${l.lines.map((t,i)=>`<tspan x="${l.x}" dy="${i?l.fs+2.5:0}">${tk(t,'tspan')}</tspan>`).join('')}</text>`});
  let nd='';
- nodes.forEach(q=>{const im=q.img?eqImg(q.img):q.k==='pump'?'eqimg/pump.svg':null;const eq=q.k==='term'?'':(q.eq||q.l);
+ const BDG={};if(VA&&USUB[VA]&&UZONE)USUB[VA].forEach(z=>{if(z.badge)BDG[z.badge]=z});
+ nodes.forEach(q=>{const bd=BDG[q.id];const im=q.img?eqImg(q.img):q.k==='pump'?'eqimg/pump.svg':null;const eq=q.k==='term'?'':(q.eq||q.l);
   const body=q.k==='well'?WELLSVG:im?`<img src="${im}" alt="" loading="lazy">`:q.k==='term'?'':TANKSVG;
-  nd+=`<div class="un u${q.k}${q.a&&q.a!==VA?' ulink':''}" ${q.a&&q.a!==VA?`data-uopen="${q.a}"`:''} ${eq?`data-eq="${esc(eq)}" data-es="${esc(q.s||'')}" data-ex="${esc((q.ex||[]).join('|'))}"`:''} style="left:${q.x-ox}px;top:${q.y-oy}px;width:${q.w}px;height:${q.h}px">${body}<b>${esc(q.l)}</b>${q.s?`<small>${tk(q.s,'span')}</small>`:''}${(q.ex||[]).map(e=>`<span class="ux">${tk(e,'span')}</span>`).join('')}</div>`});
+  nd+=`<div class="un u${q.k}${q.a&&q.a!==VA?' ulink':''}" ${q.a&&q.a!==VA?`data-uopen="${q.a}"`:''} ${eq?`data-eq="${esc(eq)}" data-es="${esc(q.s||'')}" data-ex="${esc((q.ex||[]).join('|'))}"`:''} style="left:${q.x-ox}px;top:${q.y-oy}px;width:${q.w}px;height:${q.h}px">${bd?`<span class="ubdg" style="background:${bd.col}">${esc(bd.c)}</span>`:''}${body}<b>${esc(q.l)}</b>${q.s?`<small>${tk(q.s,'span')}</small>`:''}${(q.ex||[]).map(e=>`<span class="ux">${tk(e,'span')}</span>`).join('')}</div>`});
  // demais linhas
  const fam=k=>{const it=(LIDX[k]||[])[0],r=it&&ITEM[it.id];const fl=r&&r.fl||'';
   if(/^WRW/.test(k))return 'WRW';if(/^WDE/.test(k))return 'WDE';if(/^(WLH|W1)/.test(k))return 'WLH';if(/^WHH/.test(k))return 'WHH';if(/^WDR/.test(k))return 'WDR';if(/^(WEF|B32)/.test(k))return 'WEF';
@@ -1753,6 +1759,8 @@ function drawUFlow(boxId,wrapId,legId,VA){const box=$('#'+boxId);if(!box)return;
  let bg='';
  if(!VA){[[40,1150,'ÁGUA BRUTA · TRATAMENTO · CALDEIRA E CONDENSADO'],[1160,1700,'AR COMPRIMIDO (esquerda) · ÁGUA DE RESFRIAMENTO (direita)'],[1710,2050,'ÓLEO DIESEL']].forEach(([a,b,l],i)=>{bg+=`<rect x="0" y="${a}" width="${W}" height="${b-a}" fill="${i%2?'#f6f8fb':'#fbfcfd'}"/><text x="14" y="${a+18}" font-size="12.5" font-weight="800" fill="#e07b00">${l}</text>`})}
  else bg+=`<rect x="${ox}" y="${oy}" width="${WV}" height="${bandY}" fill="#fbfcfd"/><text x="${ox+16}" y="${oy+26}" font-size="15" font-weight="800" fill="#10263f">${esc(((AREA[VA]||{}).code||'')+' · '+ANAME(VA)).toUpperCase()}</text><text x="${ox+16}" y="${oy+44}" font-size="11" fill="#56687a">Setas tracejadas: correntes que entram ou saem da área (de onde vêm e para onde vão).</text>`;
+ if(VA&&USUB[VA]&&UZONE){USUB[VA].forEach(z=>{if(!z.zn)return;let a=1e9,b=1e9,c=-1e9,d=-1e9;(z.zn.ids||[]).forEach(i=>{const n=P[i];if(!n)return;a=Math.min(a,n.x);b=Math.min(b,n.y);c=Math.max(c,n.x+n.w);d=Math.max(d,n.y+n.h)});(z.zn.ext||[]).forEach(([x0,y0,x1,y1])=>{a=Math.min(a,x0);b=Math.min(b,y0);c=Math.max(c,x1);d=Math.max(d,y1)});
+  a-=8;b-=24;c+=8;d+=8;bg+=`<rect x="${a}" y="${b}" width="${c-a}" height="${d-b}" rx="10" fill="${z.col}" fill-opacity=".09" stroke="${z.col}" stroke-width="2" stroke-dasharray="7 4"/><rect x="${a}" y="${b}" width="${Math.min(c-a,(z.zl||z.c).length*6.6+14)}" height="18" rx="5" fill="${z.col}"/><text x="${a+7}" y="${b+13}" font-size="11" font-weight="800" fill="#fff">${esc(z.zl||z.c)}</text>`})}
  if(bx)bg+=`<rect id="ulast" x="${ox}" y="${oy+bandY}" width="${WV}" height="400" fill="#f6f8fb"/><text x="${ox+14}" y="${oy+bandY+18}" font-size="12.5" font-weight="800" fill="#e07b00">${VA?'DEMAIS LINHAS DA ÁREA':'DEMAIS LINHAS DO PLANO'} (ramais, purgas, drenos e interligações) · passe o mouse no TAG para ver válvulas e instrumentos</text>`;
  const nP=Object.values(P).filter(q=>q.k==='pump'||q.k==='well').length;
  box.style.width=WV+'px';box.style.zoom=1;
@@ -1763,6 +1771,50 @@ function drawUFlow(boxId,wrapId,legId,VA){const box=$('#'+boxId);if(!box)return;
  $('#'+legId).innerHTML=[...used].filter(f=>FLUIDS[f]).map(f=>`<span><i style="background:${C(f)}"></i>${esc(f)} · ${esc(FLUIDS[f].n)}</span>`).join('')+'<span>Passe o mouse no TAG de uma linha, numa bomba ou num tanque para ver válvulas e instrumentos.</span>';
  uFit()}
 function drawUtil(){drawUFlow('ufc','ufw','uleg',null)}
+/* ---------- subsistemas de comissionamento (teste: Área 40 · água bruta) ---------- */
+let UZONE=true;
+const WELLX=[['P-40001A','01','Caldeira','WRW40003','FIT-40001','PI-40001','LB-40001','VF-40019','VC-40001','VF-40009'],['P-40001B','03','Utilidades','WRW40004','FIT-40002','PI-40002','LB-40002','VF-40018','VC-40002','VF-40013'],['P-40001C','04','Administração','WRW40005','FIT-40003','PI-40003','LB-40003','VF-40017','VC-40003','VF-40014'],['P-40001D','02','Apoio caminhoneiros','WRW40006','FIT-40004','PI-40004','LB-40004','VF-40016','','VF-40015'],['P-40001E','05','Central de resíduos','WRW40030','FIT-40009','PI-40016','LB-40005','VF-40038','VC-40005','VF-40041'],['P-40001F','06','Tanques de etanol','WRW40031','FIT-40010','PI-40017','LB-40006','VF-40039','VC-40006','VF-40042'],['P-40001G','07','Armaz. DDGS','WRW40032','FIT-40011','PI-40018','LB-40007','VF-40040','VC-40007','VF-40043']];
+const USUB={raw:[
+ ...WELLX.map((w,i)=>({c:'40-0'+(i+1),n:'Poço '+w[1]+' · '+w[0],col:'#1f8a70',f:'Captação de água subterrânea do poço '+w[1]+' ('+w[2]+') e adução até o header.',
+  ini:'Bomba submersa '+w[0]+' (cabeça do poço)',fim:'Válvula de bloqueio '+w[9]+' no header (inclusa)',eq:[w[0]],ln:[w[3]],ins:[w[4],'FQI-'+w[4].slice(4),w[5],w[6]],vlv:[w[7],w[8],w[9]].filter(Boolean),
+  dep:'Energia no painel local '+w[6]+' · rede de automação (sinal do LIC-40002)',
+  mc:'Isométrico do '+w[3]+' montado e testado (hidrostático) · suportes · bomba submersa instalada · cabos lançados, terminados e com megger',
+  pc:'Limpeza/flushing da adução · loop check do '+w[4]+' e do '+w[5]+' · sentido de rotação e corrente a vazio · teste da retenção '+(w[8]||'—'),
+  co:'Partida do poço com descarga para o TK-40001 · vazão e pressão conforme curva · totalização no FQI · parada pelo nível',
+  zn:i?null:{ids:WELLX.map((_,j)=>'PW'+j),ext:[[80,170,232,960]]},zl:'40-01 a 40-07 · 1 por poço',badge:'PW'+i})),
+ {c:'40-08',n:'Header de adução e controle de nível',col:'#6a4fc9',f:'Recebe a água dos 7 poços e leva ao TK-40001; a malha de nível liga e desliga os poços.',ini:'Saída das válvulas de bloqueio do header (VF-40009 … VF-40043)',fim:'Bocal de entrada do TK-40001',
+  eq:[],ln:['WRW40007'],ins:['LIC-40002 (malha de nível)'],vlv:[],dep:'Subsistemas 40-01 a 40-07 e 40-09 · PLC/automação',
+  mc:'Isométrico do 10" WRW40007 montado e testado · suportes',pc:'Flushing do header · verificação da malha LIC-40002 (sinal até as bombas dos poços)',co:'Teste funcional da malha: nível baixo liga, nível alto desliga os poços',
+  zn:{ext:[[236,170,330,950]]},zl:'40-08'},
+ {c:'40-09',n:'Tanque de água bruta TK-40001',col:'#e07b00',f:'Armazenamento de água bruta e reserva técnica de incêndio (4000 m³).',ini:'Bocais do TK-40001',fim:'Primeira válvula de cada saída · drenos e ladrão até a canaleta',
+  eq:['TK-40001'],ln:['WRW40008','WRW40009','WRW40010'],ins:['LIT-40002','LSHH-40001','LAHH-40001'],vlv:['VB-40058','VB-40045'],dep:'Nenhuma (primeiro a ser liberado)',
+  mc:'Tanque montado, teste de estanqueidade (enchimento) e inspeção · drenos e ladrão montados',pc:'Limpeza interna · calibração e loop check do LIT-40002 · teste das chaves e alarmes LSHH/LAHH',co:'Enchimento controlado com água dos poços · verificação de alarmes e do ladrão',
+  zn:{ids:['TK40001','CAN']},zl:'40-09 · TK-40001'},
+ {c:'40-10',n:'Header de saída e alimentação da ETA FAST',col:'#13a89e',f:'Leva a água bruta do tanque até o pacote FAST (osmoses, potabilização) e até a sucção das bombas.',ini:'Bocal N13 do TK-40001',fim:'Limite de bateria do pacote PS-40001 (FAST) e válvulas de sucção das bombas',
+  eq:[],ln:['WRW40021','WRW40034','WRW40036','WRW40038','WRW40042'],ins:[],vlv:[],dep:'40-09 · pacote FAST pronto para receber água',
+  mc:'Isométricos do 14" WRW40021 e dos ramais para a FAST montados e testados',pc:'Flushing até o limite de bateria (com o pacote isolado)',co:'Fornecimento de água para o comissionamento da FAST (sistema 30)',
+  zn:{ext:[[515,112,692,818],[600,140,778,212]]},zl:'40-10'},
+ {c:'40-11',n:'Bombeamento de água clorada',col:'#2e7d32',f:'P-30004A/B (150 m³/h) bombeiam água para a distribuição geral de água clorada.',ini:'Válvulas de sucção das P-30004A/B',fim:'Limite com o 30-PR-PID-00005 (distribuição de água clorada)',
+  eq:['P-30004A','P-30004B'],ln:['WRW40043','WRW40044','WRW40046'],ins:['FIT-30002'],vlv:[],dep:'40-10 · energia do CCM · dosagem de cloro',
+  mc:'Bombas niveladas, grauteadas e alinhadas · isométricos de sucção e recalque testados · motores com megger',pc:'Alinhamento final a quente/frio · rotação · loop check do FIT-30002 · flushing',co:'Partida A e B, revezamento, vazão e pressão conforme curva',
+  zn:{ids:['P30004A','P30004B','CLO'],ext:[[822,620,880,940]]},zl:'40-11'},
+ {c:'40-12',n:'Bombeamento de água bruta para baixa dureza',col:'#8e44ad',f:'P-30005A envia água bruta para o TK-30003 (água de baixa dureza).',ini:'Válvula de sucção da P-30005A',fim:'Válvula de nível LV-30004 no TK-30003 (sistema 30 · Osmose)',
+  eq:['P-30005A'],ln:['WRW40039','WRW40048','WRW40023'],ins:['PI-30005'],vlv:['LV-30004 (limite)'],dep:'40-10 · TK-30003 pronto (Osmose)',
+  mc:'Bomba alinhada e grauteada · isométricos testados',pc:'Rotação · loop check · flushing',co:'Enchimento do TK-30003 com controle pela LV-30004',
+  zn:{ids:['P30005A'],ext:[[822,445,1000,505]]},zl:'40-12'},
+ {c:'Interface 46',n:'Combate a incêndio (outro sistema)',col:'#64778a',f:'Sucção 18" WRW40011 e retorno 16" WRW40002 pertencem ao sistema 46; aqui só o limite.',ini:'VB-40001 / VB-40002 no TK-40001',fim:'46-PR-PID-00001',eq:[],ln:['WRW40011','WRW40002'],ins:[],vlv:['VB-40001','VB-40002'],dep:'—',mc:'Limite fica com o sistema 46',pc:'—',co:'—',zn:{ids:['INC']},zl:'Interface 46'}]};
+function subsHtml(id){const L=USUB[id];if(!L)return '';
+ const pct=z=>{const ls=z.ln.flatMap(k=>(LIDX[k]||[]).filter(o=>o.a===id||!o.a)).map(o=>LPC[lstate(o.id)]);const es=z.eq.map(t=>EQIDX[t.replace(/\s+/g,'')]).filter(Boolean).map(i=>[0,50,100,100][estate(i)]);const all=ls.concat(es);return all.length?Math.round(all.reduce((a,b)=>a+b,0)/all.length):null};
+ const chip=(t,k)=>k?`<i class="ulk" data-lk="${k}">${esc(uLtag(k))}</i>`:`<i>${esc(t)}</i>`;
+ return `<div class="sbx"><h4 class="ptitle" style="margin-top:22px">Subsistemas de teste e comissionamento · ${esc(AREA[id].code)} ${esc(AREA[id].title)} <span class="sbtag">TESTE</span></h4>
+ <div class="sbm"><b>Como foi dividido.</b> Hierarquia usada no mercado (NORSOK Z-007 e sistemas de completação): <b>Área → Sistema → Subsistema → Pacote de teste</b>. Cada subsistema tem <b>uma função</b>, é <b>isolável por válvulas</b> (limite de início e fim claros), pode ser <b>testado e entregue sozinho</b> e recebe o próprio certificado de completação mecânica. Pacote de teste hidrostático nunca atravessa o limite de um subsistema. Cada subsistema passa por três etapas: <b>A · completação mecânica</b> (montagem, teste hidrostático, megger), <b>B · pré-comissionamento</b> (limpeza, loop check, rotação), <b>C · comissionamento</b> (partida com fluido e teste funcional). Sequência sugerida: 40-09 → 40-01…40-07 → 40-08 → 40-10 → 40-11 / 40-12.</div>
+ <div class="sbt"><table><thead><tr><th>Subsistema</th><th>Função</th><th>Limites</th><th>Equipamentos · linhas · instrumentos · válvulas</th><th>A · Completação mecânica</th><th>B · Pré-comissionamento</th><th>C · Comissionamento</th><th>Depende de</th><th>Avanço</th></tr></thead><tbody>
+ ${L.map(z=>{const p=pct(z);return `<tr><td><span class="sbc" style="background:${z.col}">${esc(z.c)}</span><b>${esc(z.n)}</b></td><td>${esc(z.f)}</td><td><small>Início</small> ${esc(z.ini)}<br><small>Fim</small> ${esc(z.fim)}</td>
+  <td><div class="uc">${z.eq.map(t=>`<i class="sbe">${esc(t)}</i>`).join('')}${z.ln.map(k=>chip(k,k)).join('')}${z.ins.map(t=>`<i class="sbi">${esc(t)}</i>`).join('')}${z.vlv.map(t=>`<i class="sbv">${esc(t)}</i>`).join('')}</div></td>
+  <td>${esc(z.mc)}</td><td>${esc(z.pc)}</td><td>${esc(z.co)}</td><td>${esc(z.dep)}</td><td class="sbp">${p==null?'—':`<b>${p}%</b><div class="sbbar"><i style="width:${p}%"></i></div>`}</td></tr>`}).join('')}
+ </tbody></table></div>
+ <p class="fnote">Linhas da área sem P&amp;ID de referência para o limite (WRW40045, WRW40049, WRW40050) ficam fora até a definição. O avanço usa o status das linhas e dos equipamentos do plano.</p></div>`}
+
 function uNorm(s){return s.replace(/^(DRENO\d|PURGA\d)-?/,'$1-').replace(/-/g,'').replace(/^(DRENO\d|PURGA\d)/,'$1-')}
 function uLtag(k){return lineTag(k).replace(/"\s*-/,'" ').replace(/(\d{5}R?)[-\/].*$/,'$1')}
 function uFit(){[['ufw','ufc'],['pfw','pfc']].forEach(([wi,bi])=>{const w=$('#'+wi),b=$('#'+bi);if(!w||!b||!b.style.width||!w.clientWidth)return;w.classList.toggle('uzoom',UZOOM===1);b.style.zoom=UZOOM===1?1:Math.min(1,(w.clientWidth-2)/parseFloat(b.style.width))});document.querySelectorAll('[data-uz]').forEach(x=>x.setAttribute('aria-pressed',String(+x.dataset.uz===UZOOM)))}
@@ -1830,7 +1882,8 @@ function lineTag(k){const R=LIDX[k];const t=R&&R.length&&ITEM[R[0].id]?ITEM[R[0]
 function drawPFD(id){const a=AREA[id];$('#pb').innerHTML=`<div class="bd"><h4 class="ptitle">Fluxo de processo · ${esc(a.code)} ${esc(a.title)}</h4>
  <div class="bdleg"><span>Mesmo padrão do fluxo geral: cada bomba com o seu TAG e as linhas de sucção e recalque, cada corrente com o TAG das linhas. <b>Passe o mouse</b> no TAG de uma linha para ver as válvulas e os instrumentos dela, e numa bomba ou tanque para ver tipo, instrumentos e válvulas. As setas tracejadas mostram de onde vem e para onde vai cada corrente fora da área.</span></div>
  <div class="uzb"><button class="chipb" data-uz="0" aria-pressed="${UZOOM===0}">Ajustar à tela</button><button class="chipb" data-uz="1" aria-pressed="${UZOOM===1}">Tamanho real (rolar para os lados)</button></div>
- <div class="fw" id="pfw"><div class="bfc pfd" id="pfc"></div></div><div class="bdleg" id="pleg"></div></div>`;drawUFlow('pfc','pfw','pleg',id)}
+ ${USUB[id]?`<div class="uzb" style="margin-top:4px"><button class="chipb" data-uzone="1" aria-pressed="${UZONE}">Mostrar subsistemas no desenho</button></div>`:''}<div class="fw" id="pfw"><div class="bfc pfd" id="pfc"></div></div><div class="bdleg" id="pleg"></div>${subsHtml(id)}</div>`;drawUFlow('pfc','pfw','pleg',id)}
+document.addEventListener('click',e=>{const z=e.target.closest('[data-uzone]');if(z&&currentArea){UZONE=!UZONE;drawPFD(currentArea)}});
 function drawPFDold(id){const a=AREA[id],B=BLK[id]||{};const subs=a.subs.filter(s=>(FLOWSPEC[id]||{})[s.fl]);
  if(!subs.length){$('#pb').innerHTML=`<div class="bd"><h4 class="ptitle">Fluxo de processo · ${esc(a.code)} ${esc(a.title)}</h4><p class="fnote">O fluxo de processo desta área entra na próxima revisão (depende do fluxograma de referência do fornecedor). Use o Diagrama de blocos enquanto isso.</p></div>`;return}
  let fl=PFDSUB[id];if(!subs.some(s=>s.fl===fl))fl=PFDSUB[id]=subs[0].fl;const sub=a.subs.find(s=>s.fl===fl),G=pfdGraph(id,fl),fc=(FLUIDS[fl]||{c:'#2f6fd1'}).c;
