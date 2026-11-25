@@ -1516,48 +1516,68 @@ function eqRole(id){const r=ITEM[id];const t=r.t+' '+(r.itemDescription||'');for
 
 /* ---------- fluxo geral das utilidades ---------- */
 const UN=[
- {id:'POCOS',x:110,y:150,l:'Poços artesianos',s:'P-40001A a G · 7 poços',well:1,a:'raw'},
- {id:'TK40001',x:400,y:150,l:'TK-40001',s:'Água bruta e RTI · 4000 m³',img:'TK-40001',a:'raw'},
- {id:'INC',x:400,y:400,l:'Combate a incêndio',s:'bombas 46-PR-PID-00001',t:1},
- {id:'ETA',x:690,y:150,l:'ETA FAST / Osmose',s:'PS-40001 · potabilização, osmoses e cloração',img:'OSMOSE',a:'water'},
- {id:'TK30001',x:980,y:60,l:'TK-30001',s:'Água desmineralizada',img:'TK-30001',a:'water'},
- {id:'TK30003',x:980,y:250,l:'TK-30003',s:'Água de baixa dureza',img:'TK-30003',a:'water'},
- {id:'TK30002',x:980,y:440,l:'TK-30002',s:'Água de alta dureza',img:'TK-30002',a:'water'},
- {id:'TK40002',x:980,y:630,l:'TK-40002',s:'Água potável',img:'TK-40002',a:'water'},
- {id:'BIO',x:980,y:820,l:'Armazém de biomassa',s:'alimentação da caldeira',t:1,a:'biomass'},
- {id:'CAL',x:1290,y:200,l:'Caldeira',s:'HPB · vapor 13 barg · desaerador',img:'CALDEIRA',a:'steam',big:1},
- {id:'TK00001',x:1290,y:500,l:'TK-00001',s:'Condensado geral · P-00003A/B',img:'TK-00001',a:'cond'},
- {id:'CT',x:1290,y:760,l:'Torres de resfriamento',s:'CT-31001 / CT-31002 · P-1402 / P-1412',img:'CT-31002',a:'cooling'},
- {id:'PROC',x:1640,y:430,l:'Processo Be8',s:'Destilaria · fermentação · cozimento · mash milling · secadores · glúten · DDGS',t:1,tall:1},
- {id:'PRED',x:1640,y:880,l:'Prédios e vestiários',s:'água potável',t:1},
+ {id:'POCOS',x:110,y:200,l:'Poços artesianos',s:'P-40001A a G · 7 poços',well:1,a:'raw'},
+ {id:'TK40001',x:420,y:200,l:'TK-40001',s:'Água bruta e RTI · 4000 m³',img:'TK-40001',a:'raw'},
+ {id:'INC',x:420,y:470,l:'Combate a incêndio',s:'46-PR-PID-00001',t:1},
+ {id:'ETA',x:720,y:200,l:'ETA FAST / Osmose',s:'PS-40001 · potabilização, osmoses e cloração',img:'OSMOSE',a:'water'},
+ {id:'TK30001',x:1010,y:130,l:'TK-30001',s:'Água desmineralizada',img:'TK-30001',a:'water'},
+ {id:'TK30003',x:1010,y:360,l:'TK-30003',s:'Água de baixa dureza',img:'TK-30003',a:'water'},
+ {id:'TK30002',x:1010,y:590,l:'TK-30002',s:'Água de alta dureza',img:'TK-30002',a:'water'},
+ {id:'TK40002',x:1010,y:820,l:'TK-40002',s:'Água potável',img:'TK-40002',a:'water'},
+ {id:'CAL',x:1350,y:170,l:'Caldeira',s:'HPB · vapor 13 barg · desaerador',img:'CALDEIRA',a:'steam',big:1},
+ {id:'BIO',x:1720,y:110,l:'Armazém de biomassa',s:'combustível da caldeira',t:1,a:'biomass'},
+ {id:'TK00001',x:1350,y:500,l:'TK-00001',s:'Condensado geral · P-00003A/B',img:'TK-00001',a:'cond'},
+ {id:'CT',x:1350,y:800,l:'Torres de resfriamento',s:'CT-31001 / CT-31002 · P-1402 / P-1412',img:'CT-31002',a:'cooling'},
+ {id:'PROC',x:1720,y:240,l:'Processo Be8',s:'Destilaria · fermentação · cozimento · mash milling · secadores · glúten · DDGS',t:1,tall:1},
+ {id:'PRED',x:1720,y:1180,l:'Prédios e vestiários',s:'água potável',t:1},
  {id:'K',x:110,y:1060,l:'Compressores',s:'K-36001A a E · K-36002',img:'K-36001',a:'air'},
- {id:'V36',x:400,y:1060,l:'Vasos pulmão',s:'V-36001 · V-36002 · V-36005',img:'V-36002',a:'air'},
- {id:'CAM',x:110,y:1290,l:'Caminhão-tanque',s:'descarregamento de diesel',t:1,a:'diesel'},
- {id:'TK42001',x:400,y:1290,l:'TK-42001',s:'Tanque de óleo diesel · P-42001',img:'TK-42001',a:'diesel'},
- {id:'BD',x:690,y:1290,l:'P-42003A/B e filtros',s:'bombas de diesel para os queimadores',img:'P-42003A',a:'diesel'},
- {id:'GER',x:1640,y:1290,l:'Geradores de emergência',s:'EPU-73001 · EPU-74001 · EPU-75001A',t:1},
+ {id:'V36',x:420,y:1060,l:'Vasos pulmão',s:'V-36001 · V-36002 · V-36005',img:'V-36002',a:'air'},
+ {id:'CAM',x:110,y:1330,l:'Caminhão-tanque',s:'descarregamento de diesel',t:1,a:'diesel'},
+ {id:'TK42001',x:420,y:1300,l:'TK-42001',s:'Tanque de óleo diesel',img:'TK-42001',a:'diesel'},
+ {id:'BD',x:720,y:1300,l:'P-42003A/B e filtros',s:'bombas de diesel',img:'P-42003A',a:'diesel'},
+ {id:'QUE',x:1350,y:1330,l:'Queimador de partida',s:'caldeira',t:1},
+ {id:'GER',x:1720,y:1400,l:'Geradores de emergência',s:'EPU-73001 · EPU-74001 · EPU-75001A',t:1},
 ];
-const UE=[['POCOS','TK40001','WRW','7 × 6" · header 10" WRW40007'],['TK40001','ETA','WRW','14" WRW40021'],['TK40001','INC','WRW','18" WRW40011'],
- ['ETA','TK30001','WDE','água desmi'],['ETA','TK30003','WLH','baixa dureza'],['ETA','TK30002','WHH','alta dureza'],['ETA','TK40002','WDR','água potável'],
- ['TK30001','CAL','WDE','reposição do desaerador'],['TK30003','CT','WLH','make-up das torres'],['TK30002','PROC','WHH','moinho · glúten · chiller'],['TK40002','PRED','WDR','rede de água potável'],
- ['BIO','CAL','BIO','biomassa'],['CAL','PROC','MPS','vapor de média 13 barg → redutoras 3 barg'],['PROC','TK00001','LPC','retorno de condensado'],['TK00001','CAL','LPC','6" LPC00014 → desaerador'],
- ['CT','PROC','CTW','água de resfriamento (ida)'],['PROC','CT','CTW','retorno'],
- ['K','V36','AIN','descarga dos compressores'],['V36','PROC','AIN','6" AIN36003 · ar de instrumentos'],['V36','CAL','AIN','ar para a caldeira'],
- ['CAM','TK42001','DOL','4" DOL42001'],['TK42001','BD','DOL','2" DOL42003'],['BD','CAL','DOL','queimador de partida'],['BD','GER','DOL','reservatórios dos geradores'],['BD','INC','DOL','bombas de incêndio a diesel']];
-function drawUtil(){const box=$('#ufc');if(!box)return;const W=1820,H=1420;const P={};
- UN.forEach(n=>{const w=n.big?250:n.t?(n.tall?220:190):200,h=n.tall?760:n.big?250:n.t?96:190;P[n.id]={x:n.x-w/2+40,y:n.y-(n.tall?380:0),w,h,n}});
- let sv='',nd='',lane=0;const used=new Set();
- UE.forEach(([s,t,f,lab],i)=>{const A=P[s],B=P[t];const c=(FLUIDS[f]||{c:'#888'}).c;used.add(f);let d,lx,ly;
-  const ay=A.y+A.h/2,by=Math.min(Math.max(B.y+B.h/2,B.y+20),B.y+B.h-20);
-  if(B.x>A.x+A.w){const off=((i%5)-2)*6;const gx=A.x+A.w+Math.min(60,(B.x-A.x-A.w)/2)+off;const ty=B.n.tall?Math.min(Math.max(ay,B.y+30),B.y+B.h-30):by;d=`M${A.x+A.w},${ay} H${gx} V${ty} H${B.x-4}`;lx=A.x+A.w+8;ly=ay-8}
-  else if(B.x+B.w<A.x){const sy=A.n.tall?Math.min(Math.max(by,A.y+30),A.y+A.h-30):ay;const gx=B.x+B.w+40+(lane++%3)*10;d=`M${A.x},${sy} H${gx} V${by} H${B.x+B.w+4}`;lx=gx+6;ly=sy-8}
-  else{const up=B.y<A.y;const x=A.x+A.w/2+(up?-30:30);d=`M${x},${up?A.y:A.y+A.h} V${up?B.y+B.h+4:B.y-4}`;lx=x+6;ly=(up?(A.y+B.y+B.h):(A.y+A.h+B.y))/2}
-  sv+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="5" stroke-linejoin="round" opacity=".9" marker-end="url(#um${f})"/><text x="${lx}" y="${ly}" font-size="12" font-weight="700" fill="${c}" stroke="#fff" stroke-width="4" paint-order="stroke">${esc(lab)}</text>`});
- const mk=[...used].map(f=>`<marker id="um${f}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0L10,5L0,10z" fill="${FLUIDS[f].c}"/></marker>`).join('');
- Object.values(P).forEach(p=>{const n=p.n,im=n.img&&eqImg(n.img);const cls=n.t?'pfn pterm':'pfn peq ulink';
-  nd+=`<div class="${cls}${n.a?' ulink':''}" ${n.a?`data-uopen="${n.a}"`:''} style="left:${p.x}px;top:${p.y}px;width:${p.w}px;height:${p.h}px">${im?`<img src="${im}" alt="${esc(n.l)}" loading="lazy" style="max-height:${n.big?190:140}px">`:n.well?WELLSVG:n.t?AREASVG:TANKSVG}<b>${esc(n.l)}</b><small>${esc(n.s)}</small></div>`});
- box.style.width=W+'px';box.style.height=H+'px';box.innerHTML=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>${mk}</defs><text x="20" y="30" font-size="15" font-weight="800" fill="#10263f">FLUXO GERAL DAS UTILIDADES · Be8 PASSO FUNDO</text><text x="20" y="1410" font-size="11" fill="#56687a">Imagens: maquete 3D Be8 · sentido do fluxo conforme os P&amp;IDs</text>${sv}</svg>${nd}`;
- $('#uleg').innerHTML=[...used].map(f=>`<span><i style="background:${FLUIDS[f].c}"></i>${esc(f)} · ${esc(FLUIDS[f].n)}</span>`).join('');
+function drawUtil(){const box=$('#ufc');if(!box)return;const W=1880,H=1520;const P={};
+ UN.forEach(n=>{const w=n.big?260:n.t?(n.tall?220:200):210,h=n.tall?920:n.big?260:n.t?96:200;const y0=n.tall?n.y-60:n.y-h/2;P[n.id]={x:n.x-w/2,y:y0,w,h,n,cx:n.x,cy:y0+h/2,r:n.x+w/2,l:n.x-w/2,t:y0,b:y0+h}});
+ const p=P,C=f=>(FLUIDS[f]||{c:'#888'}).c;
+ // [fluido, pontos, rótulo, x,y do rótulo]
+ const E=[
+  ['WRW',[[p.POCOS.r,200],[p.TK40001.l,200]],'7 × 6" + header 10" WRW40007',p.POCOS.r+6,190],
+  ['WRW',[[p.TK40001.r,200],[p.ETA.l,200]],'14" WRW40021',p.TK40001.r+6,190],
+  ['WRW',[[420,p.TK40001.b],[420,p.INC.t]],'18" WRW40011',426,(p.TK40001.b+p.INC.t)/2],
+  ['WDE',[[p.ETA.r,170],[850,170],[850,130],[p.TK30001.l,130]],'desmi',856,124],
+  ['WLH',[[p.ETA.r,190],[862,190],[862,360],[p.TK30003.l,360]],'baixa dureza',868,354],
+  ['WHH',[[p.ETA.r,210],[874,210],[874,590],[p.TK30002.l,590]],'alta dureza',880,584],
+  ['WDR',[[p.ETA.r,230],[886,230],[886,820],[p.TK40002.l,820]],'potável',892,814],
+  ['WDE',[[p.TK30001.r,130],[p.CAL.l,130]],'reposição do desaerador',p.TK30001.r+6,122],
+  ['BIO',[[p.BIO.l,110],[p.CAL.r,110]],'biomassa',p.CAL.r+8,102],
+  ['MPS',[[p.CAL.r,250],[p.PROC.l,250]],'vapor 13 barg',p.CAL.r+8,242],
+  ['LPC',[[p.PROC.l,480],[p.TK00001.r,480]],'retorno de condensado',p.TK00001.r+8,472],
+  ['LPC',[[1350,p.TK00001.t],[1350,p.CAL.b]],'6" LPC00014 → desaerador',1356,(p.TK00001.t+p.CAL.b)/2],
+  ['WHH',[[p.TK30002.r,590],[1150,590],[1150,640],[p.PROC.l,640]],'moinho · glúten · chiller',1160,632],
+  ['WLH',[[p.TK30003.r,360],[1120,360],[1120,780],[p.CT.l,780]],'make-up das torres',1126,772],
+  ['CTW',[[p.CT.r,770],[p.PROC.l,770]],'água de resfriamento',p.CT.r+8,762],
+  ['CTW',[[p.PROC.l,830],[p.CT.r,830]],'retorno',p.CT.r+8,848],
+  ['WDR',[[p.TK40002.r,820],[1095,820],[1095,1180],[p.PRED.l,1180]],'rede de água potável',1105,1172],
+  ['AIN',[[p.K.r,1060],[p.V36.l,1060]],'descarga dos compressores',p.K.r+6,1052],
+  ['AIN',[[p.V36.r,1060],[p.PROC.l,1060]],'6" AIN36003 · ar de instrumentos para processo e utilidades',p.V36.r+8,1052],
+  ['DOL',[[p.CAM.r,1330],[p.TK42001.l,1330]],'4" DOL42001',p.CAM.r+6,1322],
+  ['DOL',[[p.TK42001.r,1300],[p.BD.l,1300]],'2" DOL42003',p.TK42001.r+6,1292],
+  ['DOL',[[p.BD.r,1330],[p.QUE.l,1330]],'1 1/2" DOL20006',p.BD.r+8,1322],
+  ['DOL',[[p.BD.r,1392],[p.GER.l,1392]],'2" DOL42008 · DOL42012 · DOL42014 · geradores',p.BD.r+8,1412],
+  ['DOL',[[720,p.BD.t],[720,560],[p.INC.r,470]],'1 1/2" DOL42010 · incêndio',726,900],
+ ];
+ const used=new Set();let sv='';
+ E.forEach(([f,pts,lab,lx,ly])=>{used.add(f);const c=C(f);let d='M'+pts.map(q=>q.join(',')).join(' L');if(pts.length===3&&pts[2][1]!==pts[1][1]&&pts[2][0]!==pts[1][0])d=`M${pts[0][0]},${pts[0][1]} V${pts[2][1]} H${pts[2][0]}`;
+  sv+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="5" stroke-linejoin="round" opacity=".92" marker-end="url(#um${f})"/><text x="${lx}" y="${ly}" font-size="12" font-weight="700" fill="${c}" stroke="#fff" stroke-width="4" paint-order="stroke">${esc(lab)}</text>`});
+ const mk=[...used].map(f=>`<marker id="um${f}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0L10,5L0,10z" fill="${C(f)}"/></marker>`).join('');
+ const bands=[[60,940,'ÁGUA · VAPOR · CONDENSADO · RESFRIAMENTO'],[960,1150,'AR COMPRIMIDO'],[1190,1490,'ÓLEO DIESEL']];
+ let bg='';bands.forEach(([a,b,l],i)=>{bg+=`<rect x="0" y="${a}" width="${W}" height="${b-a}" fill="${i%2?'#f6f8fb':'#fbfcfd'}"/><text x="14" y="${a+20}" font-size="12.5" font-weight="800" fill="#e07b00">${l}</text>`});
+ let nd='';Object.values(P).forEach(q=>{const n=q.n,im=n.img&&eqImg(n.img);const cls=n.t?'pfn pterm':'pfn peq';
+  nd+=`<div class="${cls}${n.a?' ulink':''}" ${n.a?`data-uopen="${n.a}" title="Abrir o fluxo de processo da área"`:''} style="left:${q.x}px;top:${q.y}px;width:${q.w}px;height:${q.h}px">${im?`<img src="${im}" alt="${esc(n.l)}" loading="lazy" style="max-height:${n.big?200:140}px">`:n.well?WELLSVG:n.t?AREASVG:TANKSVG}<b>${esc(n.l)}</b><small>${esc(n.s)}</small></div>`});
+ box.style.width=W+'px';box.style.height=H+'px';box.innerHTML=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>${mk}</defs>${bg}<text x="14" y="34" font-size="16" font-weight="800" fill="#10263f">FLUXO GERAL DAS UTILIDADES · Be8 PASSO FUNDO</text><text x="${W-14}" y="34" text-anchor="end" font-size="11" fill="#56687a">Imagens: maquete 3D Be8 · sentido do fluxo conforme os P&amp;IDs</text>${sv}</svg>${nd}`;
+ $('#uleg').innerHTML=[...used].map(f=>`<span><i style="background:${C(f)}"></i>${esc(f)} · ${esc(FLUIDS[f].n)}</span>`).join('');
  const w=$('#ufw');box.style.zoom=Math.min(1,(w.clientWidth-2)/W)}
 addEventListener('resize',()=>{const w=$('#ufw'),b=$('#ufc');if(w&&b&&b.style.width)b.style.zoom=Math.min(1,(w.clientWidth-2)/parseFloat(b.style.width))});
 document.addEventListener('click',e=>{const u=e.target.closest('[data-uopen]');if(u){const a=u.dataset.uopen;openArea(a,(FLOWSPEC[a]?'pfd':'m3d'))}});
