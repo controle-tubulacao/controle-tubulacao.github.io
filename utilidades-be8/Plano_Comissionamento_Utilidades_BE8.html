@@ -1723,13 +1723,15 @@ function drawUFlow(boxId,wrapId,legId,VA){const box=$('#'+boxId);if(!box)return;
  ED.forEach(e=>{const sN=inN(e.pts[0]),eN=inN(e.pts.at(-1)),sA=sN?sN.ar:e.cur,eA=eN?eN.ar:e.cur;let mode='full',pts=e.pts;
   if(VA){if(sA===VA&&eA===VA)mode='full';else if(sA===VA)mode='out';else if(eA===VA)mode='in';else return}
   if(mode==='out'&&e.o.br)return;
-  if(mode==='out')pts=seg(e.pts,160);if(mode==='in')pts=seg(e.pts.slice().reverse(),160).reverse();
+  const oth=mode==='out'?eN:mode==='in'?sN:null;const _a=e.pts[0],_b=e.pts.at(-1),_d=Math.hypot(_b[0]-_a[0],_b[1]-_a[1]);const showOth=!!(oth&&oth.pumps&&oth.pumps.length&&_d<420);
+  if(showOth)vis.add(oth.id);
+  else{if(mode==='out')pts=seg(e.pts,160);if(mode==='in')pts=seg(e.pts.slice().reverse(),160).reverse()}
   if(sN&&mode!=='in')vis.add(sN.id);if(eN&&mode!=='out')vis.add(eN.id);used.add(e.f);
   paths.push({f:e.f,pts,o:e.o,arrow:mode==='out'||!e.o.na,stub:mode!=='full'});
   const tags=[].concat(e.o.t||[]);
   if(mode==='full'){if(tags.length)labs.push({f:e.f,lines:tags,x:e.o.at[0],y:e.o.at[1],anc:e.o.anc||'start',fs:e.o.fs||11.5})}
-  else{let st=e.o.st?[].concat(e.o.st):tags;
-   {const pn=mode==='out'?eN:sN;if(pn&&pn.pumps&&pn.pumps.length)st=st.map(t=>{const ks=(String(t).match(RX0)||[]).map(uNorm);if(!ks.length)return t;const g=pn.pumps.find(pp=>(String(pp[1]).match(RX0)||[]).map(uNorm).some(x=>ks.includes(x)));return g?t+' · '+g[0].charAt(0).toLowerCase()+g[0].slice(1):t})}
+  else if(!showOth){let st=e.o.st?[].concat(e.o.st):tags;
+
    const p=pts[0],q=pts[1]||p,dx=q[0]-p[0],dy=q[1]-p[1];const L=mode==='out'?[...st,...(st.some(t=>/→/.test(t))?[]:['→ para '+(eN?eN.l:ANAME(eA))])]:['← vem de '+(sN?sN.l:ANAME(sA)),...st];const n=L.length;
    const H=(n-1)*13,up=p[1]-8-H,dn=p[1]+18;let C;
    if(Math.abs(dx)>=Math.abs(dy)){const a0=dx<0?'end':'start',x0=p[0]+(dx<0?-6:6);C=[[x0,up,a0],[x0,dn,a0],[p[0]+(dx<0?6:-6),p[1]-H/2+4,dx<0?'start':'end'],...[1,2,3,4,5,6,7,8].map(k=>[x0,dn+k*16,a0])]}
